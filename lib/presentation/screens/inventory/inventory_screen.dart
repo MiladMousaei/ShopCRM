@@ -8,6 +8,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../domain/models/product.dart';
 import '../../providers/product_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
@@ -46,9 +47,11 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
       child: Scaffold(
         // ─── نوار بالا ───────────────────────────────────────────
         appBar: AppBar(
+          leading: const AppHeaderBackButton(),
           title: const Text(
             AppStrings.inventory,
-            style: TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.w700),
+            style:
+                TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.w700),
           ),
           actions: [
             // دکمه تازه‌سازی دستی
@@ -67,7 +70,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'جستجو در انبار...',
-                  hintStyle: const TextStyle(fontFamily: 'Vazirmatn', fontSize: 13),
+                  hintStyle:
+                      const TextStyle(fontFamily: 'Vazirmatn', fontSize: 13),
                   prefixIcon: const Icon(Icons.search, size: 20),
                   // دکمه پاک‌کردن جستجو
                   suffixIcon: _searchController.text.isNotEmpty
@@ -76,7 +80,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                           onPressed: () {
                             _searchController.clear();
                             // ری‌ست کردن query provider
-                            ref.read(productSearchQueryProvider.notifier).state = '';
+                            ref
+                                .read(productSearchQueryProvider.notifier)
+                                .state = '';
                           },
                         )
                       : null,
@@ -213,7 +219,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.warehouse_outlined, size: 80, color: AppColors.textHint),
+          const Icon(Icons.warehouse_outlined,
+              size: 80, color: AppColors.textHint),
           const SizedBox(height: 16),
           const Text(
             'انبار خالی است',
@@ -227,7 +234,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
           const SizedBox(height: 8),
           const Text(
             'ابتدا محصولاتی به سیستم اضافه کنید',
-            style: TextStyle(fontFamily: 'Vazirmatn', color: AppColors.textHint),
+            style:
+                TextStyle(fontFamily: 'Vazirmatn', color: AppColors.textHint),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -354,7 +362,9 @@ class _InventoryProductTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
-                isLow ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+                isLow
+                    ? Icons.warning_amber_rounded
+                    : Icons.check_circle_outline,
                 color: stockColor,
                 size: 22,
               ),

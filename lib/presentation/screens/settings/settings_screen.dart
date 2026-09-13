@@ -11,6 +11,7 @@ import '../../../services/biometric_service.dart';
 import '../../../services/backup_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sync_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/confirm_dialog.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -23,7 +24,10 @@ class SettingsScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.settings)),
+        appBar: AppBar(
+          leading: const AppHeaderBackButton(),
+          title: const Text(AppStrings.settings),
+        ),
         body: ListView(
           children: [
             // پروفایل فروشگاه

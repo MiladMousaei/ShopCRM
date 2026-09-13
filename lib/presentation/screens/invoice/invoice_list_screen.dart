@@ -7,6 +7,7 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_converter.dart';
 import '../../../domain/models/invoice.dart';
 import '../../providers/invoice_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/loading_overlay.dart';
 
 class InvoiceListScreen extends ConsumerWidget {
@@ -19,12 +20,17 @@ class InvoiceListScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.invoices)),
+        appBar: AppBar(
+          leading: const AppHeaderBackButton(),
+          title: const Text(AppStrings.invoices),
+        ),
         body: invoices.when(
           data: (list) => list.isEmpty
               ? const Center(
                   child: Text('هیچ فاکتوری ثبت نشده',
-                      style: TextStyle(fontFamily: 'Vazirmatn', color: AppColors.textSecondary)),
+                      style: TextStyle(
+                          fontFamily: 'Vazirmatn',
+                          color: AppColors.textSecondary)),
                 )
               : ListView.separated(
                   padding: const EdgeInsets.all(12),
@@ -63,10 +69,14 @@ class _InvoiceCard extends StatelessWidget {
 
   Color get _statusColor {
     switch (invoice.status) {
-      case InvoiceStatus.completed: return AppColors.success;
-      case InvoiceStatus.cancelled: return AppColors.error;
-      case InvoiceStatus.refunded: return AppColors.warning;
-      default: return AppColors.textSecondary;
+      case InvoiceStatus.completed:
+        return AppColors.success;
+      case InvoiceStatus.cancelled:
+        return AppColors.error;
+      case InvoiceStatus.refunded:
+        return AppColors.warning;
+      default:
+        return AppColors.textSecondary;
     }
   }
 
@@ -88,7 +98,8 @@ class _InvoiceCard extends StatelessWidget {
                   color: _statusColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.receipt_outlined, color: _statusColor, size: 22),
+                child:
+                    Icon(Icons.receipt_outlined, color: _statusColor, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -115,7 +126,8 @@ class _InvoiceCard extends StatelessWidget {
                           ),
                         ),
                         if (invoice.customerName != null) ...[
-                          const Text(' · ', style: TextStyle(color: AppColors.textHint)),
+                          const Text(' · ',
+                              style: TextStyle(color: AppColors.textHint)),
                           Text(
                             invoice.customerName!,
                             style: const TextStyle(
@@ -144,7 +156,8 @@ class _InvoiceCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: _statusColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:excel/excel.dart';
+import 'package:file_selector_platform_interface/file_selector_platform_interface.dart'
+    as file_selector;
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -248,18 +250,38 @@ class ExcelService {
     }
   }
 
-  /// ذخیره فایل Excel در مسیر موقت و اشتراک‌گذاری با share_plus
+  /// در ویندوز فایل واقعی xlsx را در مسیر انتخابی کاربر ذخیره می‌کند.
+  /// در سایر پلتفرم‌ها رفتار اشتراک‌گذاری موجود حفظ می‌شود.
   static Future<void> _saveAndShare(Excel excel, String filename) async {
     try {
-      // دریافت مسیر ذخیره‌سازی موقت
+      final bytes = _encodeRtl(excel);
+      if (Platform.isWindows) {
+        final location =
+            await file_selector.FileSelectorPlatform.instance.getSaveLocation(
+          acceptedTypeGroups: const [
+            file_selector.XTypeGroup(
+              label: 'فایل Excel',
+              extensions: ['xlsx'],
+            ),
+          ],
+          options: file_selector.SaveDialogOptions(
+            suggestedName: '$filename.xlsx',
+          ),
+        );
+        if (location == null) return;
+
+        final selectedPath = location.path;
+        final filePath = selectedPath.toLowerCase().endsWith('.xlsx')
+            ? selectedPath
+            : '$selectedPath.xlsx';
+        await File(filePath).writeAsBytes(bytes, flush: true);
+        return;
+      }
+
       final dir = await getTemporaryDirectory();
       final filePath = '${dir.path}/$filename.xlsx';
-
-      // نوشتن بایت‌های Excel به فایل
-      final bytes = _encodeRtl(excel);
-
       final file = File(filePath);
-      await file.writeAsBytes(bytes);
+      await file.writeAsBytes(bytes, flush: true);
 
       // اشتراک‌گذاری فایل از طریق share_plus
       await SharePlus.instance.share(ShareParams(

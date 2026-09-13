@@ -19,6 +19,7 @@ void main() async {
   if (Platform.isWindows) {
     await windowManager.ensureInitialized();
     await windowManager.setPreventClose(true);
+    await windowManager.maximize();
   }
 
   // پشتیبانی از هر دو جهت نمایش (portrait + landscape)

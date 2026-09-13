@@ -11,6 +11,7 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../domain/models/product.dart';
 import '../../providers/product_provider.dart';
 import '../../widgets/barcode/barcode_scanner_widget.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/loading_overlay.dart';
 import '../../widgets/common/currency_input.dart';
 import '../../../services/product_image_service.dart';
@@ -171,6 +172,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
+          leading: const AppHeaderBackButton(fallbackRoute: '/products'),
           title: Text(isEdit ? AppStrings.editProduct : AppStrings.addProduct),
           actions: [
             if (isEdit)

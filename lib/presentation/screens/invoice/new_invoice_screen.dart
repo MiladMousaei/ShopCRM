@@ -13,6 +13,7 @@ import '../../providers/cart_provider.dart';
 import '../../providers/customer_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/printer_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/loading_overlay.dart';
 import '../../widgets/common/managed_product_image.dart';
 import '../../widgets/invoice/cart_item_tile.dart';
@@ -58,8 +59,7 @@ class _NewInvoiceScreenState extends ConsumerState<NewInvoiceScreen> {
         child: Scaffold(
           appBar: AppBar(
             title: const Text(AppStrings.newInvoice),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+            leading: AppHeaderBackButton(
               onPressed: () {
                 if (cart.isEmpty) {
                   context.pop();
@@ -353,7 +353,7 @@ class _ActionRow extends StatelessWidget {
           const SizedBox(width: 8),
           _ActionBtn(
             icon: Icons.search,
-            label: 'جستجو',
+            label: 'جستجوی محصولات',
             onTap: onSearch,
           ),
           const SizedBox(width: 8),

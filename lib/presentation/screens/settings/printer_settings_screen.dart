@@ -8,6 +8,7 @@ import '../../../services/printer/bluetooth_printer_service.dart';
 import '../../../services/printer/wifi_printer_service.dart';
 import '../../../services/printer/usb_printer_service.dart';
 import '../../providers/printer_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/loading_overlay.dart';
 
 class PrinterSettingsScreen extends ConsumerStatefulWidget {
@@ -55,7 +56,10 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.printerSettings)),
+        appBar: AppBar(
+          leading: const AppHeaderBackButton(fallbackRoute: '/settings'),
+          title: const Text(AppStrings.printerSettings),
+        ),
         body: LoadingOverlay(
           isLoading: state.isLoading,
           child: SingleChildScrollView(

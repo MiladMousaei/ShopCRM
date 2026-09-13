@@ -9,6 +9,7 @@ import '../../../data/repositories/report_repository.dart';
 import '../../../services/pdf_service.dart';
 import '../../../services/excel_service.dart';
 import '../../providers/report_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/loading_overlay.dart';
 import '../../widgets/charts/sales_chart.dart';
 
@@ -62,6 +63,7 @@ class ReportsScreen extends ConsumerWidget {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
+          leading: const AppHeaderBackButton(),
           title: const Text(AppStrings.report),
           actions: [
             IconButton(
@@ -101,20 +103,24 @@ class ReportsScreen extends ConsumerWidget {
                             child: _DateButton(
                               label: AppStrings.fromDate,
                               date: params.from,
-                              onPick: (d) => ref.read(reportParamsProvider.notifier)
+                              onPick: (d) => ref
+                                  .read(reportParamsProvider.notifier)
                                   .state = ReportParams(from: d, to: params.to),
                             ),
                           ),
                           const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 8),
-                            child: Text('تا', style: TextStyle(fontFamily: 'Vazirmatn')),
+                            child: Text('تا',
+                                style: TextStyle(fontFamily: 'Vazirmatn')),
                           ),
                           Expanded(
                             child: _DateButton(
                               label: AppStrings.toDate,
                               date: params.to,
-                              onPick: (d) => ref.read(reportParamsProvider.notifier)
-                                  .state = ReportParams(from: params.from, to: d),
+                              onPick: (d) => ref
+                                      .read(reportParamsProvider.notifier)
+                                      .state =
+                                  ReportParams(from: params.from, to: d),
                             ),
                           ),
                         ],
@@ -126,7 +132,9 @@ class ReportsScreen extends ConsumerWidget {
                         children: [
                           ActionChip(
                             label: const Text(AppStrings.daily,
-                                style: TextStyle(fontFamily: 'Vazirmatn', fontSize: 12,
+                                style: TextStyle(
+                                    fontFamily: 'Vazirmatn',
+                                    fontSize: 12,
                                     color: AppColors.textPrimary)),
                             backgroundColor: AppColors.infoLight,
                             onPressed: () {
@@ -137,12 +145,15 @@ class ReportsScreen extends ConsumerWidget {
                           ),
                           ActionChip(
                             label: const Text(AppStrings.weekly,
-                                style: TextStyle(fontFamily: 'Vazirmatn', fontSize: 12,
+                                style: TextStyle(
+                                    fontFamily: 'Vazirmatn',
+                                    fontSize: 12,
                                     color: AppColors.textPrimary)),
                             backgroundColor: AppColors.infoLight,
                             onPressed: () {
                               final now = DateTime.now();
-                              ref.read(reportParamsProvider.notifier).state = ReportParams(
+                              ref.read(reportParamsProvider.notifier).state =
+                                  ReportParams(
                                 from: now.subtract(const Duration(days: 7)),
                                 to: now,
                               );
@@ -150,12 +161,15 @@ class ReportsScreen extends ConsumerWidget {
                           ),
                           ActionChip(
                             label: const Text(AppStrings.monthly,
-                                style: TextStyle(fontFamily: 'Vazirmatn', fontSize: 12,
+                                style: TextStyle(
+                                    fontFamily: 'Vazirmatn',
+                                    fontSize: 12,
                                     color: AppColors.textPrimary)),
                             backgroundColor: AppColors.infoLight,
                             onPressed: () {
                               final now = DateTime.now();
-                              ref.read(reportParamsProvider.notifier).state = ReportParams(
+                              ref.read(reportParamsProvider.notifier).state =
+                                  ReportParams(
                                 from: now.subtract(const Duration(days: 30)),
                                 to: now,
                               );
@@ -188,7 +202,8 @@ class ReportsScreen extends ConsumerWidget {
                         Expanded(
                           child: _SummaryCard(
                             title: 'تعداد فاکتور',
-                            value: '${CurrencyFormatter.formatNumber(data.totalInvoices)} فاکتور',
+                            value:
+                                '${CurrencyFormatter.formatNumber(data.totalInvoices)} فاکتور',
                             icon: Icons.receipt_long,
                             color: AppColors.secondary,
                           ),
@@ -234,7 +249,8 @@ class ReportsScreen extends ConsumerWidget {
                             const SizedBox(height: 12),
                             if (data.topProducts.isEmpty)
                               const Text('داده‌ای برای نمایش وجود ندارد',
-                                  style: TextStyle(fontFamily: 'Vazirmatn',
+                                  style: TextStyle(
+                                      fontFamily: 'Vazirmatn',
                                       color: AppColors.textSecondary))
                             else
                               DataTable(
@@ -253,13 +269,22 @@ class ReportsScreen extends ConsumerWidget {
                                   DataColumn(label: Text('تعداد')),
                                   DataColumn(label: Text('فروش')),
                                 ],
-                                rows: data.topProducts.take(10).map((p) => DataRow(
-                                  cells: [
-                                    DataCell(Text(p.productName, overflow: TextOverflow.ellipsis)),
-                                    DataCell(Text(CurrencyFormatter.formatNumber(p.totalQuantity))),
-                                    DataCell(Text(CurrencyFormatter.formatNumber(p.totalRevenue))),
-                                  ],
-                                )).toList(),
+                                rows: data.topProducts
+                                    .take(10)
+                                    .map((p) => DataRow(
+                                          cells: [
+                                            DataCell(Text(p.productName,
+                                                overflow:
+                                                    TextOverflow.ellipsis)),
+                                            DataCell(Text(
+                                                CurrencyFormatter.formatNumber(
+                                                    p.totalQuantity))),
+                                            DataCell(Text(
+                                                CurrencyFormatter.formatNumber(
+                                                    p.totalRevenue))),
+                                          ],
+                                        ))
+                                    .toList(),
                               ),
                           ],
                         ),
@@ -286,7 +311,8 @@ class _DateButton extends StatelessWidget {
   final DateTime date;
   final ValueChanged<DateTime> onPick;
 
-  const _DateButton({required this.label, required this.date, required this.onPick});
+  const _DateButton(
+      {required this.label, required this.date, required this.onPick});
 
   @override
   Widget build(BuildContext context) {
