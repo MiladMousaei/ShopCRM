@@ -12,6 +12,7 @@ import '../../../domain/models/invoice.dart';
 import '../../../domain/models/product.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/ledger_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../../domain/models/ledger_entry.dart';
 import 'customers_screen.dart' show CustomerFormDialog;
 
@@ -43,11 +44,17 @@ class CustomerDetailScreen extends ConsumerWidget {
       textDirection: TextDirection.rtl,
       child: customerAsync.when(
         loading: () => Scaffold(
-          appBar: AppBar(title: const Text('جزئیات مشتری')),
+          appBar: AppBar(
+            leading: const AppHeaderBackButton(fallbackRoute: '/customers'),
+            title: const Text('جزئیات مشتری'),
+          ),
           body: const Center(child: CircularProgressIndicator()),
         ),
         error: (e, _) => Scaffold(
-          appBar: AppBar(title: const Text('خطا')),
+          appBar: AppBar(
+            leading: const AppHeaderBackButton(fallbackRoute: '/customers'),
+            title: const Text('خطا'),
+          ),
           body: Center(
             child: Text('خطا: $e',
                 style: const TextStyle(fontFamily: 'Vazirmatn')),
@@ -56,7 +63,10 @@ class CustomerDetailScreen extends ConsumerWidget {
         data: (customer) {
           if (customer == null) {
             return Scaffold(
-              appBar: AppBar(title: const Text('مشتری')),
+              appBar: AppBar(
+                leading: const AppHeaderBackButton(fallbackRoute: '/customers'),
+                title: const Text('مشتری'),
+              ),
               body: const Center(
                 child: Text('مشتری یافت نشد',
                     style: TextStyle(fontFamily: 'Vazirmatn')),
@@ -104,6 +114,7 @@ class _CustomerDetailBody extends ConsumerWidget {
     return Scaffold(
       // ─── نوار بالا ─────────────────────────────────────────────
       appBar: AppBar(
+        leading: const AppHeaderBackButton(fallbackRoute: '/customers'),
         title: Text(
           customer.name,
           style: const TextStyle(

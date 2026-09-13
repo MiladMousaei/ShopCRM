@@ -2,8 +2,17 @@
 /// تست‌های جامع‌تر در test/utils/ و test/models/ قرار دارند
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:drift/native.dart';
 import 'package:shop_crm/core/utils/currency_formatter.dart';
 import 'package:shop_crm/core/utils/date_converter.dart';
+import 'package:shop_crm/data/local/database.dart';
+import 'package:shop_crm/domain/models/ledger_entry.dart';
+import 'package:shop_crm/presentation/providers/ledger_provider.dart';
+import 'package:shop_crm/presentation/providers/product_provider.dart';
+import 'package:shop_crm/presentation/screens/accounting/accounting_screen.dart';
+import 'package:shop_crm/presentation/widgets/common/app_header_back_button.dart';
 import 'package:shop_crm/presentation/widgets/common/confirm_dialog.dart';
 import 'package:shop_crm/app.dart';
 
@@ -59,5 +68,62 @@ void main() {
     await tester.tap(find.text('بازگشت'));
     await tester.pumpAndSettle();
     expect(find.text('آیا می‌خواهید از برنامه خارج شوید؟'), findsNothing);
+  });
+
+  testWidgets('فلش هدر در تب اصلی به داشبورد برمی‌گردد', (tester) async {
+    final router = GoRouter(
+      initialLocation: '/reports',
+      routes: [
+        GoRoute(
+          path: '/dashboard',
+          builder: (_, __) => const Scaffold(body: Text('داشبورد')),
+        ),
+        GoRoute(
+          path: '/reports',
+          builder: (_, __) => Scaffold(
+            appBar: AppBar(leading: const AppHeaderBackButton()),
+            body: const Text('گزارش‌ها'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('بازگشت'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('داشبورد'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('فیلترهای حسابداری در عرض محدود بدون overflow مرتب می‌شوند',
+      (tester) async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    await tester.binding.setSurfaceSize(const Size(620, 760));
+
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        databaseProvider.overrideWithValue(db),
+        ledgerEntriesProvider.overrideWith(
+          (_) => Stream.value(const <LedgerEntry>[]),
+        ),
+      ],
+      child: const MaterialApp(home: AccountingScreen()),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('همه'), findsOneWidget);
+    expect(find.text('بستانکار'), findsOneWidget);
+    expect(find.text('بازه تاریخ'), findsOneWidget);
+    expect(find.byType(Wrap), findsWidgets);
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    await db.close();
+    await tester.binding.setSurfaceSize(null);
+    await tester.pump();
   });
 }

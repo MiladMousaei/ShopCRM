@@ -10,6 +10,7 @@ import '../../providers/invoice_provider.dart';
 import '../../providers/sync_provider.dart';
 import '../../providers/report_provider.dart';
 import '../../providers/customer_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/stat_card.dart';
 import '../../widgets/common/loading_overlay.dart';
 import '../../widgets/charts/sales_chart.dart';
@@ -34,6 +35,7 @@ class DashboardScreen extends ConsumerWidget {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
+          leading: const AppHeaderBackButton(),
           title: const Text(AppStrings.dashboard),
           actions: [
             IconButton(

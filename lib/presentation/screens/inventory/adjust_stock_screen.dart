@@ -14,6 +14,7 @@ import '../../../domain/models/inventory_log.dart';
 import '../../../domain/models/product.dart';
 import '../../../services/notification_service.dart';
 import '../../providers/product_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 
 class AdjustStockScreen extends ConsumerStatefulWidget {
   /// شناسه محصول — اختیاری
@@ -157,18 +158,18 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
       // ثبت لاگ انبار برای ردیابی تاریخچه تغییرات
       final db = ref.read(databaseProvider);
       await db.into(db.inventoryLogsTable).insert(
-        InventoryLogsTableCompanion.insert(
-          productId: product.id,
-          type: _selectedType.name,
-          quantity: quantity,
-          previousStock: previousStock,
-          newStock: newStock,
-          reason: drift.Value(_reasonController.text.isEmpty
-              ? null
-              : _reasonController.text),
-          createdAt: DateTime.now(),
-        ),
-      );
+            InventoryLogsTableCompanion.insert(
+              productId: product.id,
+              type: _selectedType.name,
+              quantity: quantity,
+              previousStock: previousStock,
+              newStock: newStock,
+              reason: drift.Value(_reasonController.text.isEmpty
+                  ? null
+                  : _reasonController.text),
+              createdAt: DateTime.now(),
+            ),
+          );
 
       if (mounted) {
         // نمایش پیام موفقیت و برگشت به صفحه قبل
@@ -206,9 +207,11 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
       child: Scaffold(
         // ─── نوار بالا ───────────────────────────────────────────
         appBar: AppBar(
+          leading: const AppHeaderBackButton(fallbackRoute: '/inventory'),
           title: const Text(
             AppStrings.adjustStock,
-            style: TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.w700),
+            style:
+                TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.w700),
           ),
         ),
 
@@ -293,8 +296,8 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
         if (_searchResults.isNotEmpty)
           Card(
             elevation: 2,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             child: ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -307,8 +310,7 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
                   title: Text(
                     product.name,
                     style: const TextStyle(
-                        fontFamily: 'Vazirmatn',
-                        fontWeight: FontWeight.w600),
+                        fontFamily: 'Vazirmatn', fontWeight: FontWeight.w600),
                   ),
                   subtitle: Text(
                     'موجودی: ${CurrencyFormatter.formatQuantity(product.stockQuantity)}',
@@ -318,8 +320,8 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
                         color: AppColors.textSecondary),
                   ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: product.isLowStock
                           ? AppColors.errorLight
@@ -361,8 +363,7 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
     return Card(
       elevation: 0,
       color: AppColors.infoLight,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -403,8 +404,7 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
                       fontFamily: 'Vazirmatn',
                       fontSize: 12,
                       color: isLow ? AppColors.error : AppColors.textSecondary,
-                      fontWeight:
-                          isLow ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: isLow ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                   Text(
@@ -421,8 +421,7 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
             // دکمه تغییر محصول — فقط اگر productId ارسال نشده باشد
             if (widget.productId == null)
               TextButton(
-                onPressed: () =>
-                    setState(() => _selectedProduct = null),
+                onPressed: () => setState(() => _selectedProduct = null),
                 child: const Text(
                   'تغییر',
                   style: TextStyle(fontFamily: 'Vazirmatn'),
@@ -439,8 +438,7 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
     return Card(
       elevation: 0,
       color: Colors.white,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -499,9 +497,7 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
         decoration: BoxDecoration(
           color: isSelected ? color.withOpacity(0.08) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: isSelected
-              ? Border.all(color: color.withOpacity(0.3))
-              : null,
+          border: isSelected ? Border.all(color: color.withOpacity(0.3)) : null,
         ),
         child: Row(
           children: [
@@ -514,17 +510,14 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
               },
             ),
             Icon(icon,
-                color:
-                    isSelected ? color : AppColors.textSecondary,
-                size: 20),
+                color: isSelected ? color : AppColors.textSecondary, size: 20),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
                 fontFamily: 'Vazirmatn',
                 fontSize: 14,
-                fontWeight:
-                    isSelected ? FontWeight.w600 : FontWeight.w400,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color: isSelected ? color : AppColors.textPrimary,
               ),
             ),
@@ -607,8 +600,8 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );

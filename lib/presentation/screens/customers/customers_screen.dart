@@ -10,10 +10,10 @@ import '../../../domain/models/customer.dart';
 import '../../../domain/models/product.dart';
 import '../../../data/repositories/customer_repository.dart';
 import '../../providers/cart_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 
 /// Provider برای جستجوی مشتریان
-final customerSearchQueryProvider =
-    StateProvider<String>((ref) => '');
+final customerSearchQueryProvider = StateProvider<String>((ref) => '');
 
 /// Provider استریم مشتریان با فیلتر جستجو
 final customersStreamProvider = StreamProvider<List<Customer>>((ref) {
@@ -70,10 +70,11 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
       child: Scaffold(
         // ─── نوار بالا ───────────────────────────────────────────
         appBar: AppBar(
+          leading: const AppHeaderBackButton(),
           title: const Text(
             AppStrings.customers,
-            style: TextStyle(
-                fontFamily: 'Vazirmatn', fontWeight: FontWeight.w700),
+            style:
+                TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.w700),
           ),
           actions: [
             // دکمه بارگذاری مجدد
@@ -158,8 +159,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
   Widget _buildCustomerList(List<Customer> customers) {
     // محاسبه تعداد بدهکاران برای نوار خلاصه
     final debtorCount = customers.where((c) => c.hasDebt).length;
-    final totalDebt =
-        customers.fold<double>(0, (sum, c) => sum + c.totalDebt);
+    final totalDebt = customers.fold<double>(0, (sum, c) => sum + c.totalDebt);
 
     return Column(
       children: [
@@ -201,8 +201,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
           const SizedBox(height: 12),
           const Text(
             'خطا در بارگذاری مشتریان',
-            style: TextStyle(
-                fontFamily: 'Vazirmatn', fontSize: 16),
+            style: TextStyle(fontFamily: 'Vazirmatn', fontSize: 16),
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
@@ -236,8 +235,8 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
           const SizedBox(height: 8),
           const Text(
             'برای افزودن مشتری جدید دکمه + را بزنید',
-            style: TextStyle(
-                fontFamily: 'Vazirmatn', color: AppColors.textHint),
+            style:
+                TextStyle(fontFamily: 'Vazirmatn', color: AppColors.textHint),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -315,9 +314,7 @@ class _CustomerTile extends StatelessWidget {
               backgroundColor:
                   hasDebt ? AppColors.errorLight : AppColors.infoLight,
               child: Text(
-                customer.name.isNotEmpty
-                    ? customer.name[0].toUpperCase()
-                    : '?',
+                customer.name.isNotEmpty ? customer.name[0].toUpperCase() : '?',
                 style: TextStyle(
                   fontFamily: 'Vazirmatn',
                   fontSize: 18,
@@ -377,8 +374,7 @@ class _CustomerTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_left,
-                color: AppColors.textHint, size: 20),
+            const Icon(Icons.chevron_left, color: AppColors.textHint, size: 20),
           ],
         ),
       ),
@@ -451,8 +447,7 @@ class CustomerFormDialog extends ConsumerStatefulWidget {
   const CustomerFormDialog({this.customer, this.onSaved});
 
   @override
-  ConsumerState<CustomerFormDialog> createState() =>
-      CustomerFormDialogState();
+  ConsumerState<CustomerFormDialog> createState() => CustomerFormDialogState();
 }
 
 class CustomerFormDialogState extends ConsumerState<CustomerFormDialog> {
@@ -468,8 +463,7 @@ class CustomerFormDialogState extends ConsumerState<CustomerFormDialog> {
   void initState() {
     super.initState();
     // پر کردن فیلدها از مشتری موجود (ویرایش) یا خالی (افزودن)
-    _nameController =
-        TextEditingController(text: widget.customer?.name ?? '');
+    _nameController = TextEditingController(text: widget.customer?.name ?? '');
     _phoneController =
         TextEditingController(text: widget.customer?.phone ?? '');
     _addressController =
@@ -502,8 +496,7 @@ class CustomerFormDialogState extends ConsumerState<CustomerFormDialog> {
         address: _addressController.text.trim().isEmpty
             ? null
             : _addressController.text.trim(),
-        creditLimit:
-            double.tryParse(_creditLimitController.text) ?? 0,
+        creditLimit: double.tryParse(_creditLimitController.text) ?? 0,
         totalDebt: widget.customer?.totalDebt ?? 0,
         updatedAt: DateTime.now(),
         syncStatus: SyncStatus.pending,

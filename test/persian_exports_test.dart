@@ -40,14 +40,21 @@ void main() {
     const report = SalesReport(
       totalSales: 100000,
       totalProfit: 0,
-      totalInvoices: 1,
+      totalInvoices: 2,
       dailySales: {'2026-01-01': 100000},
-      topProducts: [],
+      topProducts: [
+        TopProduct(
+          productId: 1,
+          productName: 'محصول فارسی کامل',
+          totalQuantity: 3,
+          totalRevenue: 100000,
+        ),
+      ],
     );
     final bytes = await PdfService.buildSalesReportPdf(
         report, DateTime(2026, 1, 1), DateTime(2026, 1, 2));
     expect(bytes.take(4).toList(), [37, 80, 68, 70]);
-    expect(bytes.length, greaterThan(5000));
+    expect(bytes.length, greaterThan(10000));
   });
 
   test('Excel گزارش فروش دارای شیت و عنوان‌های فارسی است', () {

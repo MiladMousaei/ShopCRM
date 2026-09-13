@@ -6,6 +6,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../domain/models/product.dart';
 import '../../providers/product_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/loading_overlay.dart';
 import '../../widgets/common/managed_product_image.dart';
 
@@ -34,6 +35,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
+          leading: const AppHeaderBackButton(),
           title: const Text(AppStrings.products),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(56),

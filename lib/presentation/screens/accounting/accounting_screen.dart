@@ -11,6 +11,7 @@ import '../../../services/excel_service.dart';
 import '../../../services/pdf_service.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/ledger_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/confirm_dialog.dart';
 import '../customers/customers_screen.dart';
 
@@ -54,7 +55,10 @@ class _AccountingScreenState extends ConsumerState<AccountingScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text('حسابداری')),
+        appBar: AppBar(
+          leading: const AppHeaderBackButton(),
+          title: const Text('حسابداری'),
+        ),
         body: Column(children: [
           Padding(
             padding: const EdgeInsets.all(12),
@@ -77,114 +81,118 @@ class _AccountingScreenState extends ConsumerState<AccountingScreen> {
                 )),
               ),
               const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(children: [
-                  _filterChip(
-                      'همه',
-                      filter.direction == null && filter.hasInvoice == null,
-                      () => _replace(filter,
-                          clearDirection: true, clearInvoice: true)),
-                  _filterChip(
-                      'بدهکار',
-                      filter.direction == LedgerDirection.debit,
-                      () => _replace(filter, direction: LedgerDirection.debit)),
-                  _filterChip(
-                      'بستانکار',
-                      filter.direction == LedgerDirection.credit,
-                      () =>
-                          _replace(filter, direction: LedgerDirection.credit)),
-                  _filterChip('دارای فاکتور', filter.hasInvoice == true,
-                      () => _replace(filter, hasInvoice: true)),
-                  _filterChip('بدون فاکتور', filter.hasInvoice == false,
-                      () => _replace(filter, hasInvoice: false)),
-                  const SizedBox(width: 8),
-                  PopupMenuButton<int>(
-                    tooltip: 'فیلتر مشتری',
-                    onSelected: (id) => _replace(filter,
-                        customerId: id == -1 ? null : id,
-                        clearCustomer: id == -1),
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(
-                          value: -1, child: Text('همه مشتریان')),
-                      ..._customers.map((customer) => PopupMenuItem(
-                          value: customer.id, child: Text(customer.name))),
-                    ],
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Row(children: [
-                        const Icon(Icons.person_search_outlined),
-                        const SizedBox(width: 4),
-                        Text(_customerFilterLabel(filter.customerId)),
-                      ]),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _filterChip(
+                        'همه',
+                        filter.direction == null && filter.hasInvoice == null,
+                        () => _replace(filter,
+                            clearDirection: true, clearInvoice: true)),
+                    _filterChip(
+                        'بدهکار',
+                        filter.direction == LedgerDirection.debit,
+                        () =>
+                            _replace(filter, direction: LedgerDirection.debit)),
+                    _filterChip(
+                        'بستانکار',
+                        filter.direction == LedgerDirection.credit,
+                        () => _replace(filter,
+                            direction: LedgerDirection.credit)),
+                    _filterChip('دارای فاکتور', filter.hasInvoice == true,
+                        () => _replace(filter, hasInvoice: true)),
+                    _filterChip('بدون فاکتور', filter.hasInvoice == false,
+                        () => _replace(filter, hasInvoice: false)),
+                    PopupMenuButton<int>(
+                      tooltip: 'فیلتر مشتری',
+                      onSelected: (id) => _replace(filter,
+                          customerId: id == -1 ? null : id,
+                          clearCustomer: id == -1),
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                            value: -1, child: Text('همه مشتریان')),
+                        ..._customers.map((customer) => PopupMenuItem(
+                            value: customer.id, child: Text(customer.name))),
+                      ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Row(children: [
+                          const Icon(Icons.person_search_outlined),
+                          const SizedBox(width: 4),
+                          Text(_customerFilterLabel(filter.customerId)),
+                        ]),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: () => _pickRange(filter),
-                    icon: const Icon(Icons.date_range_outlined, size: 18),
-                    label: Text(filter.from == null
-                        ? 'بازه تاریخ'
-                        : '${DateConverter.toShamsi(filter.from!)} تا ${DateConverter.toShamsi(filter.to!)}'),
-                  ),
-                  const SizedBox(width: 8),
-                  PopupMenuButton<String>(
-                    onSelected: (value) => _setFilter(LedgerFilter(
-                      query: filter.query,
-                      customerId: filter.customerId,
-                      from: filter.from,
-                      to: filter.to,
-                      direction: filter.direction,
-                      hasInvoice: filter.hasInvoice,
-                      sortByAmount: value.startsWith('amount'),
-                      ascending: value.endsWith('asc'),
-                    )),
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(
-                          value: 'date_desc', child: Text('تاریخ - جدیدترین')),
-                      PopupMenuItem(
-                          value: 'date_asc', child: Text('تاریخ - قدیمی‌ترین')),
-                      PopupMenuItem(
-                          value: 'amount_desc', child: Text('مبلغ - بیشترین')),
-                      PopupMenuItem(
-                          value: 'amount_asc', child: Text('مبلغ - کمترین')),
-                    ],
-                    child: const Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Row(children: [
-                        Icon(Icons.sort),
-                        SizedBox(width: 4),
-                        Text('مرتب‌سازی')
-                      ]),
+                    OutlinedButton.icon(
+                      onPressed: () => _pickRange(filter),
+                      icon: const Icon(Icons.date_range_outlined, size: 18),
+                      label: Text(filter.from == null
+                          ? 'بازه تاریخ'
+                          : '${DateConverter.toShamsi(filter.from!)} تا ${DateConverter.toShamsi(filter.to!)}'),
                     ),
-                  ),
-                  if (filter.from != null ||
-                      filter.direction != null ||
-                      filter.hasInvoice != null ||
-                      filter.customerId != null)
-                    TextButton(
-                        onPressed: () {
-                          _search.clear();
-                          _setFilter(const LedgerFilter());
-                        },
-                        child: const Text('پاک‌کردن فیلترها')),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: loadedEntries.isEmpty
-                        ? null
-                        : () => _exportExcel(loadedEntries),
-                    icon: const Icon(Icons.table_view_outlined, size: 18),
-                    label: const Text('Excel'),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: loadedEntries.isEmpty
-                        ? null
-                        : () => _exportPdf(loadedEntries),
-                    icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
-                    label: const Text('PDF'),
-                  ),
-                ]),
+                    PopupMenuButton<String>(
+                      onSelected: (value) => _setFilter(LedgerFilter(
+                        query: filter.query,
+                        customerId: filter.customerId,
+                        from: filter.from,
+                        to: filter.to,
+                        direction: filter.direction,
+                        hasInvoice: filter.hasInvoice,
+                        sortByAmount: value.startsWith('amount'),
+                        ascending: value.endsWith('asc'),
+                      )),
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(
+                            value: 'date_desc',
+                            child: Text('تاریخ - جدیدترین')),
+                        PopupMenuItem(
+                            value: 'date_asc',
+                            child: Text('تاریخ - قدیمی‌ترین')),
+                        PopupMenuItem(
+                            value: 'amount_desc',
+                            child: Text('مبلغ - بیشترین')),
+                        PopupMenuItem(
+                            value: 'amount_asc', child: Text('مبلغ - کمترین')),
+                      ],
+                      child: const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Row(children: [
+                          Icon(Icons.sort),
+                          SizedBox(width: 4),
+                          Text('مرتب‌سازی')
+                        ]),
+                      ),
+                    ),
+                    if (filter.from != null ||
+                        filter.direction != null ||
+                        filter.hasInvoice != null ||
+                        filter.customerId != null)
+                      TextButton(
+                          onPressed: () {
+                            _search.clear();
+                            _setFilter(const LedgerFilter());
+                          },
+                          child: const Text('پاک‌کردن فیلترها')),
+                    OutlinedButton.icon(
+                      onPressed: loadedEntries.isEmpty
+                          ? null
+                          : () => _exportExcel(loadedEntries),
+                      icon: const Icon(Icons.table_view_outlined, size: 18),
+                      label: const Text('Excel'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: loadedEntries.isEmpty
+                          ? null
+                          : () => _exportPdf(loadedEntries),
+                      icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
+                      label: const Text('PDF'),
+                    ),
+                  ],
+                ),
               ),
             ]),
           ),
@@ -374,21 +382,18 @@ class _AccountingScreenState extends ConsumerState<AccountingScreen> {
       );
 
   Widget _filterChip(String label, bool selected, VoidCallback onTap) =>
-      Padding(
-        padding: const EdgeInsets.only(left: 6),
-        child: FilterChip(
-          label: Text(label),
-          selected: selected,
-          labelStyle: TextStyle(
-            color: selected ? AppColors.primary : AppColors.textPrimary,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-          ),
-          selectedColor: AppColors.primary.withValues(alpha: .14),
-          checkmarkColor: AppColors.primary,
-          side: BorderSide(
-              color: selected ? AppColors.primary : AppColors.border),
-          onSelected: (_) => onTap(),
+      FilterChip(
+        label: Text(label),
+        selected: selected,
+        labelStyle: TextStyle(
+          color: selected ? AppColors.primary : AppColors.textPrimary,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
         ),
+        selectedColor: AppColors.primary.withValues(alpha: .14),
+        checkmarkColor: AppColors.primary,
+        side:
+            BorderSide(color: selected ? AppColors.primary : AppColors.border),
+        onSelected: (_) => onTap(),
       );
 
   void _setFilter(LedgerFilter value) =>

@@ -13,24 +13,39 @@ import '../data/repositories/report_repository.dart';
 class PdfService {
   PdfService._();
 
-  static Future<pw.Font> _loadFont() async {
-    final data = await rootBundle.load('assets/fonts/Vazirmatn-Regular.ttf');
-    return pw.Font.ttf(data);
+  static Future<({pw.Font regular, pw.Font bold})> _loadFonts() async {
+    final regularData =
+        await rootBundle.load('assets/fonts/Vazirmatn-Regular.ttf');
+    final boldData = await rootBundle.load('assets/fonts/Vazirmatn-Bold.ttf');
+    return (
+      regular: pw.Font.ttf(regularData),
+      bold: pw.Font.ttf(boldData),
+    );
   }
 
   // ─── تولید PDF فاکتور ───────────────────────────────────────────────────────
 
   static Future<Uint8List> buildInvoicePdf(Invoice invoice) async {
     final pdf = pw.Document();
-    final font = await _loadFont();
+    final fonts = await _loadFonts();
 
-    final body = pw.TextStyle(font: font, fontSize: 10);
-    final bold =
-        pw.TextStyle(font: font, fontSize: 10, fontWeight: pw.FontWeight.bold);
-    final title =
-        pw.TextStyle(font: font, fontSize: 16, fontWeight: pw.FontWeight.bold);
-    final sub =
-        pw.TextStyle(font: font, fontSize: 12, fontWeight: pw.FontWeight.bold);
+    final body =
+        pw.TextStyle(font: fonts.regular, fontSize: 10, wordSpacing: 1.2);
+    final bold = pw.TextStyle(
+        font: fonts.bold,
+        fontSize: 10,
+        fontWeight: pw.FontWeight.bold,
+        wordSpacing: 1.2);
+    final title = pw.TextStyle(
+        font: fonts.bold,
+        fontSize: 16,
+        fontWeight: pw.FontWeight.bold,
+        wordSpacing: 1.2);
+    final sub = pw.TextStyle(
+        font: fonts.bold,
+        fontSize: 12,
+        fontWeight: pw.FontWeight.bold,
+        wordSpacing: 1.2);
 
     pdf.addPage(
       pw.Page(
@@ -198,13 +213,20 @@ class PdfService {
   static Future<Uint8List> buildSalesReportPdf(
       SalesReport report, DateTime from, DateTime to) async {
     final pdf = pw.Document();
-    final font = await _loadFont();
+    final fonts = await _loadFonts();
 
-    final body = pw.TextStyle(font: font, fontSize: 10);
-    final bold =
-        pw.TextStyle(font: font, fontSize: 10, fontWeight: pw.FontWeight.bold);
-    final header =
-        pw.TextStyle(font: font, fontSize: 14, fontWeight: pw.FontWeight.bold);
+    final body =
+        pw.TextStyle(font: fonts.regular, fontSize: 10, wordSpacing: 1.2);
+    final bold = pw.TextStyle(
+        font: fonts.bold,
+        fontSize: 10,
+        fontWeight: pw.FontWeight.bold,
+        wordSpacing: 1.2);
+    final header = pw.TextStyle(
+        font: fonts.bold,
+        fontSize: 14,
+        fontWeight: pw.FontWeight.bold,
+        wordSpacing: 1.2);
 
     pdf.addPage(
       pw.Page(
@@ -229,7 +251,7 @@ class PdfService {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('${report.totalInvoices} فاکتور', style: body),
+                _rtlText('${report.totalInvoices} فاکتور', body),
                 _rtlText(
                     'جمع فروش: ${CurrencyFormatter.formatNumber(report.totalSales.toInt())} تومان',
                     body),
@@ -281,12 +303,18 @@ class PdfService {
 
   static Future<Uint8List> buildLedgerPdf(List<LedgerEntry> entries) async {
     final pdf = pw.Document();
-    final font = await _loadFont();
-    final body = pw.TextStyle(font: font, fontSize: 8);
-    final bold =
-        pw.TextStyle(font: font, fontSize: 8, fontWeight: pw.FontWeight.bold);
-    final title =
-        pw.TextStyle(font: font, fontSize: 15, fontWeight: pw.FontWeight.bold);
+    final fonts = await _loadFonts();
+    final body = pw.TextStyle(font: fonts.regular, fontSize: 8, wordSpacing: 1);
+    final bold = pw.TextStyle(
+        font: fonts.bold,
+        fontSize: 8,
+        fontWeight: pw.FontWeight.bold,
+        wordSpacing: 1);
+    final title = pw.TextStyle(
+        font: fonts.bold,
+        fontSize: 15,
+        fontWeight: pw.FontWeight.bold,
+        wordSpacing: 1);
 
     pdf.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4.landscape,

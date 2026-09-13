@@ -12,6 +12,7 @@ import '../../../domain/models/invoice.dart';
 import '../../../domain/models/invoice_item.dart';
 import '../../providers/invoice_provider.dart';
 import '../../providers/printer_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../../services/pdf_service.dart';
 import 'package:printing/printing.dart';
 
@@ -30,11 +31,17 @@ class InvoiceDetailScreen extends ConsumerWidget {
       textDirection: TextDirection.rtl,
       child: invoiceAsync.when(
         loading: () => Scaffold(
-          appBar: AppBar(title: const Text('جزئیات فاکتور')),
+          appBar: AppBar(
+            leading: const AppHeaderBackButton(fallbackRoute: '/invoices'),
+            title: const Text('جزئیات فاکتور'),
+          ),
           body: const Center(child: CircularProgressIndicator()),
         ),
         error: (e, _) => Scaffold(
-          appBar: AppBar(title: const Text('خطا')),
+          appBar: AppBar(
+            leading: const AppHeaderBackButton(fallbackRoute: '/invoices'),
+            title: const Text('خطا'),
+          ),
           body: Center(
             child: Text('خطا در بارگذاری فاکتور: $e',
                 style: const TextStyle(fontFamily: 'Vazirmatn')),
@@ -43,7 +50,9 @@ class InvoiceDetailScreen extends ConsumerWidget {
         data: (invoice) {
           if (invoice == null) {
             return Scaffold(
-              appBar: AppBar(),
+              appBar: AppBar(
+                leading: const AppHeaderBackButton(fallbackRoute: '/invoices'),
+              ),
               body: const Center(
                 child: Text('فاکتور یافت نشد',
                     style: TextStyle(fontFamily: 'Vazirmatn')),
@@ -68,6 +77,7 @@ class _InvoiceDetailBody extends ConsumerWidget {
     return Scaffold(
       // ─── نوار بالا ─────────────────────────────────────────────
       appBar: AppBar(
+        leading: const AppHeaderBackButton(fallbackRoute: '/invoices'),
         title: Text(
           'فاکتور ${invoice.invoiceNumber}',
           style: const TextStyle(
@@ -132,8 +142,7 @@ class _InvoiceDetailBody extends ConsumerWidget {
 
     return Card(
       elevation: 0,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -167,13 +176,12 @@ class _InvoiceDetailBody extends ConsumerWidget {
                 ),
                 // نشان‌گر وضعیت
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: statusColor.withOpacity(0.3)),
+                    border: Border.all(color: statusColor.withOpacity(0.3)),
                   ),
                   child: Text(
                     invoice.status.label,
@@ -268,8 +276,7 @@ class _InvoiceDetailBody extends ConsumerWidget {
   Widget _buildItemsSection(List<InvoiceItem> items) {
     return Card(
       elevation: 0,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -313,8 +320,7 @@ class _InvoiceDetailBody extends ConsumerWidget {
                 children: [
                   _InvoiceItemRow(item: entry.value, index: entry.key),
                   if (entry.key < items.length - 1)
-                    const Divider(
-                        height: 8, color: AppColors.divider),
+                    const Divider(height: 8, color: AppColors.divider),
                 ],
               );
             }),
@@ -388,8 +394,7 @@ class _InvoiceDetailBody extends ConsumerWidget {
     return Card(
       elevation: 0,
       color: AppColors.infoLight,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -416,7 +421,8 @@ class _InvoiceDetailBody extends ConsumerWidget {
             // مالیات
             if (invoice.taxAmount > 0) ...[
               _buildSummaryRow(
-                label: '${AppStrings.tax} (${CurrencyFormatter.formatPercent(invoice.tax)})',
+                label:
+                    '${AppStrings.tax} (${CurrencyFormatter.formatPercent(invoice.tax)})',
                 value: '+ ${CurrencyFormatter.format(invoice.taxAmount)}',
                 valueColor: AppColors.warning,
               ),
@@ -525,8 +531,8 @@ class _InvoiceDetailBody extends ConsumerWidget {
     final buffer = StringBuffer();
     buffer.writeln('=== ${AppStrings.appName} ===');
     buffer.writeln('شماره فاکتور: ${invoice.invoiceNumber}');
-    buffer.writeln(
-        'تاریخ: ${DateConverter.toShamsiWithTime(invoice.createdAt)}');
+    buffer
+        .writeln('تاریخ: ${DateConverter.toShamsiWithTime(invoice.createdAt)}');
     if (invoice.customerName != null) {
       buffer.writeln('مشتری: ${invoice.customerName}');
     }

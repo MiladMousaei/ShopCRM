@@ -9,6 +9,7 @@ import '../../../domain/models/customer.dart';
 import '../../../domain/models/product.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/customer_provider.dart';
+import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/currency_input.dart';
 
 class CustomerFormScreen extends ConsumerStatefulWidget {
@@ -101,6 +102,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
+          leading: const AppHeaderBackButton(fallbackRoute: '/customers'),
           title: Text(
             _isEdit ? 'ویرایش مشتری' : AppStrings.addCustomer,
             style: const TextStyle(
@@ -121,8 +123,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                         controller: _nameController,
                         decoration: InputDecoration(
                           labelText: AppStrings.customerName,
-                          labelStyle:
-                              const TextStyle(fontFamily: 'Vazirmatn'),
+                          labelStyle: const TextStyle(fontFamily: 'Vazirmatn'),
                           prefixIcon: const Icon(Icons.person_outline),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10)),
@@ -141,8 +142,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
                           labelText: '${AppStrings.phone} (اختیاری)',
-                          labelStyle:
-                              const TextStyle(fontFamily: 'Vazirmatn'),
+                          labelStyle: const TextStyle(fontFamily: 'Vazirmatn'),
                           prefixIcon: const Icon(Icons.phone_outlined),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10)),
@@ -150,10 +150,9 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                           fillColor: Colors.white,
                         ),
                         style: const TextStyle(fontFamily: 'Vazirmatn'),
-                        validator: (v) =>
-                            v != null && v.isNotEmpty
-                                ? Validators.phone(v)
-                                : null,
+                        validator: (v) => v != null && v.isNotEmpty
+                            ? Validators.phone(v)
+                            : null,
                         textInputAction: TextInputAction.next,
                       ),
                       const SizedBox(height: 16),
@@ -164,8 +163,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                         maxLines: 2,
                         decoration: InputDecoration(
                           labelText: '${AppStrings.address} (اختیاری)',
-                          labelStyle:
-                              const TextStyle(fontFamily: 'Vazirmatn'),
+                          labelStyle: const TextStyle(fontFamily: 'Vazirmatn'),
                           prefixIcon: const Icon(Icons.location_on_outlined),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10)),
@@ -178,7 +176,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
 
                       // سقف اعتبار نسیه
                       CurrencyInput(
-                        label: '${AppStrings.creditLimit} (اختیاری — ۰ = بدون محدودیت)',
+                        label:
+                            '${AppStrings.creditLimit} (اختیاری — ۰ = بدون محدودیت)',
                         initialValue: _creditLimit,
                         onChanged: (v) => setState(() => _creditLimit = v),
                       ),
