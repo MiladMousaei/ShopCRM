@@ -20,14 +20,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _passwordVisible = false;
-  bool _rememberMe = true;
+  bool _rememberMe = false;
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
 
   @override
   void initState() {
     super.initState();
+    _loadRememberedCredentials();
     _checkBiometric();
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    final credentials =
+        await ref.read(authProvider.notifier).loadRememberedCredentials();
+    if (!mounted || credentials == null) return;
+    setState(() {
+      _usernameController.text = credentials.username;
+      _passwordController.text = credentials.password;
+      _rememberMe = true;
+    });
+  }
+
+  void _setRememberMe(bool value) {
+    setState(() => _rememberMe = value);
+    if (!value) {
+      ref.read(authProvider.notifier).clearRememberedCredentials();
+    }
   }
 
   Future<void> _checkBiometric() async {
@@ -193,8 +212,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 children: [
                                   Checkbox(
                                     value: _rememberMe,
-                                    onChanged: (v) => setState(
-                                        () => _rememberMe = v ?? false),
+                                    onChanged: (v) =>
+                                        _setRememberMe(v ?? false),
                                     activeColor: AppColors.primary,
                                   ),
                                   const Text(AppStrings.rememberMe,

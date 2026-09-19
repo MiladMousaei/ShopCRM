@@ -29,95 +29,103 @@ class SettingsScreen extends ConsumerWidget {
           title: const Text(AppStrings.settings),
         ),
         body: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 8),
           children: [
-            // پروفایل فروشگاه
-            const _ProfileSection(),
-            const Divider(height: 1),
-            _SectionLabel(label: 'حساب کاربری'),
-            const _AccountCredentialsTile(),
-            const Divider(height: 1),
-
-            // ─── امنیت (فقط موبایل — اثر انگشت روی ویندوز ندارد) ─────────────
-            if (!Platform.isWindows &&
-                !Platform.isLinux &&
-                !Platform.isMacOS) ...[
-              _SectionLabel(label: 'امنیت'),
-              const _BiometricTile(),
-              const Divider(height: 1),
-            ],
-
-            // ─── بکاپ ────────────────────────────────────────────────────────
-            _SectionLabel(label: 'پشتیبان‌گیری'),
-            const _BackupSection(),
-            const Divider(height: 1),
-
-            // ─── سرور و همگام‌سازی ───────────────────────────────────────────
-            _SectionLabel(label: 'سرور'),
-            _SettingsTile(
-              icon: Icons.cloud_sync,
-              iconColor:
-                  syncState.isOnline ? AppColors.success : AppColors.warning,
-              title: 'وضعیت سرور',
-              subtitle: syncState.isOnline
-                  ? (syncState.lastSyncTime != null
-                      ? 'آخرین sync: ${syncState.message ?? "همگام"}'
-                      : 'آنلاین')
-                  : AppStrings.offline,
-              trailing: TextButton(
-                onPressed: () => ref.read(syncProvider.notifier).sync(),
-                child: const Text('sync',
-                    style: TextStyle(fontFamily: 'Vazirmatn')),
+            const _SettingsSection(
+              title: 'پروفایل فروشگاه',
+              icon: Icons.store_outlined,
+              initiallyExpanded: true,
+              children: [_ProfileSection()],
+            ),
+            const _SettingsSection(
+              title: 'حساب کاربری',
+              icon: Icons.manage_accounts_outlined,
+              children: [_AccountCredentialsTile()],
+            ),
+            if (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS)
+              const _SettingsSection(
+                title: 'امنیت',
+                icon: Icons.security_outlined,
+                children: [_BiometricTile()],
               ),
+            const _SettingsSection(
+              title: 'پشتیبان‌گیری',
+              icon: Icons.backup_outlined,
+              children: [_BackupSection()],
             ),
-            const Divider(height: 1),
-            _SettingsTile(
-              icon: Icons.dns,
-              title: 'آدرس سرور',
-              subtitle: 'تنظیم API endpoint',
-              onTap: () => _showServerUrlDialog(context),
+            _SettingsSection(
+              title: 'سرور',
+              icon: Icons.dns_outlined,
+              children: [
+                _SettingsTile(
+                  icon: Icons.cloud_sync,
+                  iconColor: syncState.isOnline
+                      ? AppColors.success
+                      : AppColors.warning,
+                  title: 'وضعیت سرور',
+                  subtitle: syncState.isOnline
+                      ? (syncState.lastSyncTime != null
+                          ? 'آخرین sync: ${syncState.message ?? "همگام"}'
+                          : 'آنلاین')
+                      : AppStrings.offline,
+                  trailing: TextButton(
+                    onPressed: () => ref.read(syncProvider.notifier).sync(),
+                    child: const Text('sync',
+                        style: TextStyle(fontFamily: 'Vazirmatn')),
+                  ),
+                ),
+                const Divider(height: 1),
+                _SettingsTile(
+                  icon: Icons.dns,
+                  title: 'آدرس سرور',
+                  subtitle: 'تنظیم API endpoint',
+                  onTap: () => _showServerUrlDialog(context),
+                ),
+              ],
             ),
-            const Divider(height: 1),
-
-            // ─── دستگاه پوز (فقط ویندوز) ────────────────────────────────────
-            if (Platform.isWindows) ...[
-              _SectionLabel(label: 'دستگاه پوز'),
-              const _PosSettingsTile(),
-              const Divider(height: 1),
-            ],
-
-            // ─── سایر ────────────────────────────────────────────────────────
-            _SectionLabel(label: 'سایر'),
-            _SettingsTile(
-              icon: Icons.print,
-              title: AppStrings.printerSettings,
-              subtitle: 'تنظیم بلوتوث / وای‌فای / USB',
-              onTap: () => context.go('/settings/printer'),
-            ),
-            const Divider(height: 1),
-            _SettingsTile(
-              icon: Icons.info_outline,
-              title: 'درباره اپلیکیشن',
-              subtitle: '${AppStrings.appName} - ${AppStrings.appVersion}',
-            ),
-            const Divider(height: 1),
-            _SettingsTile(
-              icon: Icons.logout,
-              iconColor: AppColors.error,
-              title: 'خروج از حساب',
-              titleColor: AppColors.error,
-              onTap: () async {
-                final confirmed = await ConfirmDialog.show(
-                  context,
-                  title: 'خروج',
-                  message: 'آیا می‌خواهید از حساب خارج شوید؟',
-                  confirmText: 'خروج',
-                  confirmColor: AppColors.error,
-                );
-                if (confirmed == true && context.mounted) {
-                  await ref.read(authProvider.notifier).logout();
-                  context.go('/login');
-                }
-              },
+            if (Platform.isWindows)
+              const _SettingsSection(
+                title: 'دستگاه پوز',
+                icon: Icons.credit_card_outlined,
+                children: [_PosSettingsTile()],
+              ),
+            _SettingsSection(
+              title: 'سایر',
+              icon: Icons.more_horiz,
+              children: [
+                _SettingsTile(
+                  icon: Icons.print,
+                  title: AppStrings.printerSettings,
+                  subtitle: 'تنظیم بلوتوث / وای‌فای / USB',
+                  onTap: () => context.go('/settings/printer'),
+                ),
+                const Divider(height: 1),
+                _SettingsTile(
+                  icon: Icons.info_outline,
+                  title: 'درباره اپلیکیشن',
+                  subtitle: '${AppStrings.appName} - ${AppStrings.appVersion}',
+                ),
+                const Divider(height: 1),
+                _SettingsTile(
+                  icon: Icons.logout,
+                  iconColor: AppColors.error,
+                  title: 'خروج از حساب',
+                  titleColor: AppColors.error,
+                  onTap: () async {
+                    final confirmed = await ConfirmDialog.show(
+                      context,
+                      title: 'خروج',
+                      message: 'آیا می‌خواهید از حساب خارج شوید؟',
+                      confirmText: 'خروج',
+                      confirmColor: AppColors.error,
+                    );
+                    if (confirmed == true && context.mounted) {
+                      await ref.read(authProvider.notifier).logout();
+                      context.go('/login');
+                    }
+                  },
+                ),
+              ],
             ),
           ],
         ),
@@ -330,26 +338,45 @@ class _CredentialsDialogState extends ConsumerState<_CredentialsDialog> {
 
 // ─── عنوان بخش ───────────────────────────────────────────────────────────────
 
-class _SectionLabel extends StatelessWidget {
-  final String label;
-  const _SectionLabel({required this.label});
+class _SettingsSection extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final List<Widget> children;
+  final bool initiallyExpanded;
+
+  const _SettingsSection({
+    required this.title,
+    required this.icon,
+    required this.children,
+    this.initiallyExpanded = false,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontFamily: 'Vazirmatn',
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.5,
+  Widget build(BuildContext context) => ExpansionTile(
+        initiallyExpanded: initiallyExpanded,
+        maintainState: true,
+        leading: Icon(icon, color: AppColors.primary, size: 22),
+        iconColor: AppColors.primary,
+        collapsedIconColor: AppColors.textSecondary,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+        childrenPadding: const EdgeInsets.only(bottom: 4),
+        shape: const Border(
+          bottom: BorderSide(color: AppColors.border, width: 0.7),
         ),
-      ),
-    );
-  }
+        collapsedShape: const Border(
+          bottom: BorderSide(color: AppColors.border, width: 0.7),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Vazirmatn',
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        children: children,
+      );
 }
 
 // ─── اثر انگشت ───────────────────────────────────────────────────────────────

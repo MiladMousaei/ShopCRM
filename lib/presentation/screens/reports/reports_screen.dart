@@ -68,11 +68,13 @@ class ReportsScreen extends ConsumerWidget {
           actions: [
             IconButton(
               icon: const Icon(Icons.table_chart_outlined),
+              color: AppColors.success,
               onPressed: () => _exportExcel(context, ref),
               tooltip: AppStrings.exportExcel,
             ),
             IconButton(
               icon: const Icon(Icons.picture_as_pdf_outlined),
+              color: AppColors.error,
               onPressed: () => _exportPdf(context, ref),
               tooltip: AppStrings.exportPdf,
             ),
@@ -253,38 +255,41 @@ class ReportsScreen extends ConsumerWidget {
                                       fontFamily: 'Vazirmatn',
                                       color: AppColors.textSecondary))
                             else
-                              DataTable(
-                                columnSpacing: 12,
-                                headingTextStyle: const TextStyle(
-                                  fontFamily: 'Vazirmatn',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: DataTable(
+                                  columnSpacing: 12,
+                                  headingTextStyle: const TextStyle(
+                                    fontFamily: 'Vazirmatn',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  dataTextStyle: const TextStyle(
+                                    fontFamily: 'Vazirmatn',
+                                    fontSize: 12,
+                                  ),
+                                  columns: const [
+                                    DataColumn(label: Text('محصول')),
+                                    DataColumn(label: Text('تعداد')),
+                                    DataColumn(label: Text('فروش')),
+                                  ],
+                                  rows: data.topProducts
+                                      .take(10)
+                                      .map((p) => DataRow(
+                                            cells: [
+                                              DataCell(Text(p.productName,
+                                                  overflow:
+                                                      TextOverflow.ellipsis)),
+                                              DataCell(Text(CurrencyFormatter
+                                                  .formatNumber(
+                                                      p.totalQuantity))),
+                                              DataCell(Text(CurrencyFormatter
+                                                  .formatNumber(
+                                                      p.totalRevenue))),
+                                            ],
+                                          ))
+                                      .toList(),
                                 ),
-                                dataTextStyle: const TextStyle(
-                                  fontFamily: 'Vazirmatn',
-                                  fontSize: 12,
-                                ),
-                                columns: const [
-                                  DataColumn(label: Text('محصول')),
-                                  DataColumn(label: Text('تعداد')),
-                                  DataColumn(label: Text('فروش')),
-                                ],
-                                rows: data.topProducts
-                                    .take(10)
-                                    .map((p) => DataRow(
-                                          cells: [
-                                            DataCell(Text(p.productName,
-                                                overflow:
-                                                    TextOverflow.ellipsis)),
-                                            DataCell(Text(
-                                                CurrencyFormatter.formatNumber(
-                                                    p.totalQuantity))),
-                                            DataCell(Text(
-                                                CurrencyFormatter.formatNumber(
-                                                    p.totalRevenue))),
-                                          ],
-                                        ))
-                                    .toList(),
                               ),
                           ],
                         ),

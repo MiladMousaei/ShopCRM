@@ -154,9 +154,13 @@ class _ShopCrmAppState extends ConsumerState<ShopCrmApp> with WindowListener {
     final confirmed = await showExitConfirmation(context);
     if (!confirmed) return;
     _isClosing = true;
-    await ref.read(authProvider.notifier).logout();
-    await windowManager.setPreventClose(false);
-    await windowManager.destroy();
+    await windowManager.hide();
+    try {
+      await ref.read(authProvider.notifier).logout();
+    } finally {
+      await windowManager.setPreventClose(false);
+      await windowManager.destroy();
+    }
   }
 
   @override
@@ -441,11 +445,16 @@ class _AppShellState extends ConsumerState<_AppShell>
 
   Future<void> _requestExit() async {
     if (!await showExitConfirmation(context) || !mounted) return;
-    await ref.read(authProvider.notifier).logout();
     if (Platform.isWindows) {
-      await windowManager.setPreventClose(false);
-      await windowManager.destroy();
+      await windowManager.hide();
+      try {
+        await ref.read(authProvider.notifier).logout();
+      } finally {
+        await windowManager.setPreventClose(false);
+        await windowManager.destroy();
+      }
     } else {
+      await ref.read(authProvider.notifier).logout();
       SystemNavigator.pop();
     }
   }

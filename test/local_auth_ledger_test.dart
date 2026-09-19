@@ -3,9 +3,13 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_secure_storage/test/test_flutter_secure_storage_platform.dart';
+import 'package:flutter_secure_storage_platform_interface/flutter_secure_storage_platform_interface.dart';
 import 'package:shop_crm/data/local/database.dart';
 import 'package:shop_crm/data/repositories/ledger_repository.dart';
 import 'package:shop_crm/data/repositories/local_auth_repository.dart';
+import 'package:shop_crm/presentation/providers/auth_provider.dart';
 import 'package:shop_crm/domain/models/ledger_entry.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite;
 
@@ -53,6 +57,31 @@ void main() {
     expect(await auth.resumeSession(session!.token), isNotNull);
     await auth.revokeSession(session.token);
     expect(await auth.resumeSession(session.token), isNull);
+  });
+
+  test('گزینه مرا به خاطر بسپار نام کاربری و رمز را امن ذخیره می‌کند',
+      () async {
+    final secureValues = <String, String>{};
+    FlutterSecureStoragePlatform.instance =
+        TestFlutterSecureStoragePlatform(secureValues);
+    final repository = LocalAuthRepository(db);
+    await repository.ensureDefaultUser();
+    final notifier = AuthNotifier(const FlutterSecureStorage(), repository);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(
+      await notifier.login('admin', '1234', remember: true),
+      isTrue,
+    );
+    expect(secureValues['remembered_username'], 'admin');
+    expect(secureValues['remembered_password'], '1234');
+
+    expect(
+      await notifier.login('admin', '1234', remember: false),
+      isTrue,
+    );
+    expect(secureValues['remembered_username'], isNull);
+    expect(secureValues['remembered_password'], isNull);
   });
 
   test('فاکتورهای آخر داشبورد پس از ثبت به‌صورت زنده به‌روز می‌شوند', () async {

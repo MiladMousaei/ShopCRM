@@ -47,7 +47,7 @@ class _NewInvoiceScreenState extends ConsumerState<NewInvoiceScreen> {
       onKeyEvent: (event) {
         if (event is KeyDownEvent) {
           if (event.logicalKey == LogicalKeyboardKey.f3) _openScanner();
-          if (event.logicalKey == LogicalKeyboardKey.escape) context.pop();
+          if (event.logicalKey == LogicalKeyboardKey.escape) _handleBack();
           if (event.logicalKey == LogicalKeyboardKey.keyP &&
               HardwareKeyboard.instance.isControlPressed) {
             _submitInvoice();
@@ -60,13 +60,7 @@ class _NewInvoiceScreenState extends ConsumerState<NewInvoiceScreen> {
           appBar: AppBar(
             title: const Text(AppStrings.newInvoice),
             leading: AppHeaderBackButton(
-              onPressed: () {
-                if (cart.isEmpty) {
-                  context.pop();
-                } else {
-                  _showClearCartDialog();
-                }
-              },
+              onPressed: _handleBack,
             ),
             actions: [
               if (!cart.isEmpty)
@@ -291,22 +285,22 @@ class _NewInvoiceScreenState extends ConsumerState<NewInvoiceScreen> {
   void _showClearCartDialog() {
     showDialog(
       context: context,
-      builder: (_) => Directionality(
+      builder: (dialogContext) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           title: const Text('پاک کردن سبد'),
           content: const Text('آیا از پاک کردن سبد خرید مطمئن هستید؟'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('انصراف'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
               onPressed: () {
                 ref.read(cartProvider.notifier).clearCart();
-                Navigator.pop(context);
-                context.pop();
+                Navigator.pop(dialogContext);
+                _goBack();
               },
               child: const Text('پاک کردن'),
             ),
@@ -314,6 +308,23 @@ class _NewInvoiceScreenState extends ConsumerState<NewInvoiceScreen> {
         ),
       ),
     );
+  }
+
+  void _handleBack() {
+    if (ref.read(cartProvider).isEmpty) {
+      _goBack();
+    } else {
+      _showClearCartDialog();
+    }
+  }
+
+  void _goBack() {
+    final router = GoRouter.of(context);
+    if (router.canPop()) {
+      router.pop();
+    } else {
+      context.go('/dashboard');
+    }
   }
 
   void _showAddedSnack(String productName) {
