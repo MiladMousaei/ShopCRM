@@ -39,8 +39,20 @@ class AuthState {
       );
 }
 
+class RememberedCredentials {
+  final String username;
+  final String password;
+
+  const RememberedCredentials({
+    required this.username,
+    required this.password,
+  });
+}
+
 class AuthNotifier extends StateNotifier<AuthState> {
   static const _sessionKey = 'local_session_token';
+  static const _rememberedUsernameKey = 'remembered_username';
+  static const _rememberedPasswordKey = 'remembered_password';
   final FlutterSecureStorage _secureStorage;
   final LocalAuthRepository _repository;
   String? _sessionToken;
@@ -76,6 +88,31 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> hasStoredToken() async =>
       await _secureStorage.read(key: _sessionKey) != null;
 
+  Future<RememberedCredentials?> loadRememberedCredentials() async {
+    try {
+      final username = await _secureStorage.read(key: _rememberedUsernameKey);
+      final password = await _secureStorage.read(key: _rememberedPasswordKey);
+      if (username == null || username.isEmpty || password == null) return null;
+      return RememberedCredentials(username: username, password: password);
+    } catch (error, stack) {
+      await LogService.error(
+          'بازیابی اطلاعات ورود ذخیره‌شده ناموفق بود', error, stack);
+      return null;
+    }
+  }
+
+  Future<void> clearRememberedCredentials() async {
+    await _secureStorage.delete(key: _rememberedUsernameKey);
+    await _secureStorage.delete(key: _rememberedPasswordKey);
+  }
+
+  Future<void> _saveRememberedCredentials(
+      String username, String password) async {
+    await _secureStorage.write(
+        key: _rememberedUsernameKey, value: username.trim());
+    await _secureStorage.write(key: _rememberedPasswordKey, value: password);
+  }
+
   Future<bool> login(String username, String password,
       {bool remember = true}) async {
     if (username.trim().isEmpty || password.isEmpty) {
@@ -98,8 +135,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _sessionToken = session.token;
       if (remember) {
         await _secureStorage.write(key: _sessionKey, value: session.token);
+        await _saveRememberedCredentials(session.username, password);
       } else {
         await _secureStorage.delete(key: _sessionKey);
+        await clearRememberedCredentials();
       }
       state = AuthState(
         isLoggedIn: true,
@@ -143,6 +182,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
       currentPassword: currentPassword,
       newPassword: newPassword,
     );
+    final remembered = await loadRememberedCredentials();
+    if (remembered != null) {
+      await _saveRememberedCredentials(
+        username,
+        newPassword != null && newPassword.isNotEmpty
+            ? newPassword
+            : currentPassword,
+      );
+    }
     state = state.copyWith(username: username.trim());
   }
 

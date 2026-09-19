@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_strings.dart';
 import '../core/utils/date_converter.dart';
 import '../core/utils/currency_formatter.dart';
@@ -25,7 +26,10 @@ class PdfService {
 
   // ─── تولید PDF فاکتور ───────────────────────────────────────────────────────
 
-  static Future<Uint8List> buildInvoicePdf(Invoice invoice) async {
+  static Future<Uint8List> buildInvoicePdf(
+    Invoice invoice, {
+    String storeName = AppStrings.appName,
+  }) async {
     final pdf = pw.Document();
     final fonts = await _loadFonts();
 
@@ -56,7 +60,7 @@ class PdfService {
           children: [
             // ─── سربرگ ───────────────────────────────────────────────────
             pw.Center(
-                child: pw.Text(AppStrings.appName,
+                child: pw.Text(_normalizedStoreName(storeName),
                     style: title, textDirection: pw.TextDirection.rtl)),
             pw.SizedBox(height: 4),
             pw.Divider(color: PdfColors.black, thickness: 1),
@@ -211,7 +215,11 @@ class PdfService {
   // ─── تولید PDF گزارش فروش ──────────────────────────────────────────────────
 
   static Future<Uint8List> buildSalesReportPdf(
-      SalesReport report, DateTime from, DateTime to) async {
+    SalesReport report,
+    DateTime from,
+    DateTime to, {
+    String storeName = AppStrings.appName,
+  }) async {
     final pdf = pw.Document();
     final fonts = await _loadFonts();
 
@@ -237,7 +245,8 @@ class PdfService {
           children: [
             // عنوان
             pw.Center(
-              child: _rtlText('${AppStrings.appName} - گزارش فروش', header),
+              child: _rtlText(
+                  '${_normalizedStoreName(storeName)} - گزارش فروش', header),
             ),
             pw.SizedBox(height: 8),
             _rtlText(
@@ -301,7 +310,10 @@ class PdfService {
     return pdf.save();
   }
 
-  static Future<Uint8List> buildLedgerPdf(List<LedgerEntry> entries) async {
+  static Future<Uint8List> buildLedgerPdf(
+    List<LedgerEntry> entries, {
+    String storeName = AppStrings.appName,
+  }) async {
     final pdf = pw.Document();
     final fonts = await _loadFonts();
     final body = pw.TextStyle(font: fonts.regular, fontSize: 8, wordSpacing: 1);
@@ -321,7 +333,12 @@ class PdfService {
       margin: const pw.EdgeInsets.all(20),
       header: (_) => pw.Padding(
         padding: const pw.EdgeInsets.only(bottom: 12),
-        child: pw.Center(child: _rtlText('دفتر حساب مشتریان', title)),
+        child: pw.Center(
+          child: _rtlText(
+            '${_normalizedStoreName(storeName)} - دفتر حساب مشتریان',
+            title,
+          ),
+        ),
       ),
       build: (_) => [
         pw.Table(
@@ -388,12 +405,14 @@ class PdfService {
   }
 
   static Future<void> shareInvoicePdf(Invoice invoice) async {
-    final bytes = await buildInvoicePdf(invoice);
+    final storeName = await _configuredStoreName();
+    final bytes = await buildInvoicePdf(invoice, storeName: storeName);
     await savePdf(bytes, 'فاکتور_${invoice.invoiceNumber}');
   }
 
   static Future<void> shareLedger(List<LedgerEntry> entries) async {
-    final bytes = await buildLedgerPdf(entries);
+    final storeName = await _configuredStoreName();
+    final bytes = await buildLedgerPdf(entries, storeName: storeName);
     await savePdf(bytes,
         'دفتر_حساب_${DateConverter.toShamsi(DateTime.now()).replaceAll('/', '-')}');
   }
@@ -403,10 +422,28 @@ class PdfService {
     required DateTime from,
     required DateTime to,
   }) async {
-    final bytes = await buildSalesReportPdf(report, from, to);
+    final storeName = await _configuredStoreName();
+    final bytes = await buildSalesReportPdf(
+      report,
+      from,
+      to,
+      storeName: storeName,
+    );
     await savePdf(
       bytes,
       'گزارش_فروش_${DateConverter.toShamsi(from).replaceAll('/', '-')}',
     );
+  }
+
+  static String _normalizedStoreName(String storeName) =>
+      storeName.trim().isEmpty ? AppStrings.appName : storeName.trim();
+
+  static Future<String> _configuredStoreName() async {
+    final prefs = await SharedPreferences.getInstance();
+    final profileName = prefs.getString('profile_store_name')?.trim();
+    if (profileName != null && profileName.isNotEmpty) return profileName;
+    final printerName = prefs.getString('store_name')?.trim();
+    if (printerName != null && printerName.isNotEmpty) return printerName;
+    return AppStrings.appName;
   }
 }

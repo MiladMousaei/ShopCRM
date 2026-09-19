@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +20,11 @@ void main() async {
   if (Platform.isWindows) {
     await windowManager.ensureInitialized();
     await windowManager.setPreventClose(true);
-    await windowManager.maximize();
+    unawaited(windowManager.waitUntilReadyToShow(null, () async {
+      await windowManager.maximize();
+      await windowManager.show();
+      await windowManager.focus();
+    }));
   }
 
   // پشتیبانی از هر دو جهت نمایش (portrait + landscape)

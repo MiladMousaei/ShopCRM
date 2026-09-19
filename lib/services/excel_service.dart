@@ -8,6 +8,8 @@ import 'package:file_selector_platform_interface/file_selector_platform_interfac
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../core/constants/app_strings.dart';
 import '../core/utils/date_converter.dart';
 import '../core/utils/currency_formatter.dart';
 import '../domain/models/invoice.dart';
@@ -22,7 +24,10 @@ class ExcelService {
   /// تولید فایل Excel گزارش فروش
   /// شیت ۱: فروش روزانه (تاریخ، مبلغ فروش)
   /// شیت ۲: پرفروش‌ترین محصولات (نام، تعداد، درآمد)
-  static Excel buildSalesReportWorkbook(SalesReport report) {
+  static Excel buildSalesReportWorkbook(
+    SalesReport report, {
+    String storeName = AppStrings.appName,
+  }) {
     // ایجاد کتاب Excel جدید
     final excel = Excel.createExcel();
 
@@ -31,6 +36,7 @@ class ExcelService {
     dailySheet.isRTL = true;
     // حذف شیت پیش‌فرض Sheet1
     excel.delete('Sheet1');
+    _addReportTitle(dailySheet, storeName);
 
     // هدر ستون‌های شیت فروش روزانه
     _addRow(
@@ -69,6 +75,7 @@ class ExcelService {
     // ─── شیت ۲: پرفروش‌ترین محصولات ─────────────────────────────────────────
     final topSheet = excel['پرفروش‌ترین محصولات'];
     topSheet.isRTL = true;
+    _addReportTitle(topSheet, storeName);
 
     // هدر ستون‌های شیت محصولات
     _addRow(
@@ -92,13 +99,17 @@ class ExcelService {
     return excel;
   }
 
-  static List<int> buildSalesReportBytes(SalesReport report) {
-    return _encodeRtl(buildSalesReportWorkbook(report));
+  static List<int> buildSalesReportBytes(
+    SalesReport report, {
+    String storeName = AppStrings.appName,
+  }) {
+    return _encodeRtl(buildSalesReportWorkbook(report, storeName: storeName));
   }
 
   static Future<void> exportSalesReport(SalesReport report) async {
+    final storeName = await _configuredStoreName();
     await _saveAndShare(
-      buildSalesReportWorkbook(report),
+      buildSalesReportWorkbook(report, storeName: storeName),
       'گزارش_فروش_${_today()}',
     );
   }
@@ -107,13 +118,17 @@ class ExcelService {
 
   /// تولید فایل Excel از لیست فاکتورها
   /// یک ردیف به ازای هر فاکتور: شماره، تاریخ، مشتری، مبلغ، روش پرداخت
-  static Excel buildInvoicesWorkbook(List<Invoice> invoices) {
+  static Excel buildInvoicesWorkbook(
+    List<Invoice> invoices, {
+    String storeName = AppStrings.appName,
+  }) {
     final excel = Excel.createExcel();
 
     // شیت فاکتورها
     final sheet = excel['فاکتورها'];
     sheet.isRTL = true;
     excel.delete('Sheet1');
+    _addReportTitle(sheet, storeName);
 
     // هدر ستون‌ها
     _addRow(
@@ -167,20 +182,28 @@ class ExcelService {
     return excel;
   }
 
-  static List<int> buildInvoicesBytes(List<Invoice> invoices) {
-    return _encodeRtl(buildInvoicesWorkbook(invoices));
+  static List<int> buildInvoicesBytes(
+    List<Invoice> invoices, {
+    String storeName = AppStrings.appName,
+  }) {
+    return _encodeRtl(buildInvoicesWorkbook(invoices, storeName: storeName));
   }
 
   static Future<void> exportInvoices(List<Invoice> invoices) async {
-    await _saveAndShare(
-        buildInvoicesWorkbook(invoices), 'فاکتورها_${_today()}');
+    final storeName = await _configuredStoreName();
+    await _saveAndShare(buildInvoicesWorkbook(invoices, storeName: storeName),
+        'فاکتورها_${_today()}');
   }
 
-  static Excel buildLedgerWorkbook(List<LedgerEntry> entries) {
+  static Excel buildLedgerWorkbook(
+    List<LedgerEntry> entries, {
+    String storeName = AppStrings.appName,
+  }) {
     final excel = Excel.createExcel();
     final sheet = excel['دفتر حساب'];
     sheet.isRTL = true;
     excel.delete('Sheet1');
+    _addReportTitle(sheet, storeName);
     _addRow(
         sheet,
         [
@@ -219,13 +242,19 @@ class ExcelService {
     return excel;
   }
 
-  static List<int> buildLedgerBytes(List<LedgerEntry> entries) =>
-      _encodeRtl(buildLedgerWorkbook(entries));
+  static List<int> buildLedgerBytes(
+    List<LedgerEntry> entries, {
+    String storeName = AppStrings.appName,
+  }) =>
+      _encodeRtl(buildLedgerWorkbook(entries, storeName: storeName));
 
-  static Future<void> exportLedger(List<LedgerEntry> entries) => _saveAndShare(
-        buildLedgerWorkbook(entries),
-        'دفتر_حساب_${_today()}',
-      );
+  static Future<void> exportLedger(List<LedgerEntry> entries) async {
+    final storeName = await _configuredStoreName();
+    await _saveAndShare(
+      buildLedgerWorkbook(entries, storeName: storeName),
+      'دفتر_حساب_${_today()}',
+    );
+  }
 
   // ─── توابع کمکی ────────────────────────────────────────────────────────────
 
@@ -248,6 +277,20 @@ class ExcelService {
         textWrapping: TextWrapping.WrapText,
       );
     }
+  }
+
+  static void _addReportTitle(Sheet sheet, String storeName) {
+    final title = storeName.trim().isEmpty ? AppStrings.appName : storeName;
+    _addRow(sheet, [title], isHeader: true);
+  }
+
+  static Future<String> _configuredStoreName() async {
+    final prefs = await SharedPreferences.getInstance();
+    final profileName = prefs.getString('profile_store_name')?.trim();
+    if (profileName != null && profileName.isNotEmpty) return profileName;
+    final printerName = prefs.getString('store_name')?.trim();
+    if (printerName != null && printerName.isNotEmpty) return printerName;
+    return AppStrings.appName;
   }
 
   /// در ویندوز فایل واقعی xlsx را در مسیر انتخابی کاربر ذخیره می‌کند.
