@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/invoice.dart';
@@ -201,6 +200,9 @@ class PrinterNotifier extends StateNotifier<PrinterState> {
       final wifiService = _service as WiFiPrinterService;
       // دسترسی مستقیم به socket از طریق printRaw
       await wifiService.printRaw(bytes);
+    } else if (_service is UsbPrinterService) {
+      final bytes = EscPosBuilder.buildTestPrint(state.settings.storeName);
+      await (_service as UsbPrinterService).printRaw(bytes);
     }
     // بلوتوث: پیاده‌سازی در BluetoothPrinterService
   }

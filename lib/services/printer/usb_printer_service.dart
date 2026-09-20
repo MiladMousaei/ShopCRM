@@ -24,8 +24,12 @@ class UsbPrinterService extends PrinterService {
       final result = await Process.run(
         'powershell',
         [
+          '-NoProfile',
+          '-NonInteractive',
           '-Command',
-          'Get-Printer -Name "$printerName" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name',
+          r'$p = Get-Printer -Name $args[0] -ErrorAction SilentlyContinue; '
+              r'if ($null -ne $p) { $p.Name }',
+          printerName,
         ],
         stdoutEncoding: const SystemEncoding(),
       );
@@ -54,7 +58,12 @@ class UsbPrinterService extends PrinterService {
 
   /// ارسال داده خام ESC/POS به پرینتر از طریق پورت مستقیم
   Future<void> _sendRaw(List<int> bytes) async {
-    if (!Platform.isWindows) return;
+    if (!Platform.isWindows) {
+      throw UnsupportedError('پرینت USB فقط در ویندوز پشتیبانی می‌شود');
+    }
+    if (!_connected && !await connect()) {
+      throw StateError('پرینتر USB در ویندوز پیدا نشد');
+    }
 
     final temp = await getTemporaryDirectory();
     final file = File('${temp.path}\\receipt_${DateTime.now().millisecondsSinceEpoch}.bin');
@@ -65,8 +74,12 @@ class UsbPrinterService extends PrinterService {
       final portResult = await Process.run(
         'powershell',
         [
+          '-NoProfile',
+          '-NonInteractive',
           '-Command',
-          '(Get-Printer -Name "$printerName" -ErrorAction SilentlyContinue).PortName',
+          r'$p = Get-Printer -Name $args[0] -ErrorAction SilentlyContinue; '
+              r'if ($null -ne $p) { $p.PortName }',
+          printerName,
         ],
         stdoutEncoding: const SystemEncoding(),
       );
@@ -74,10 +87,18 @@ class UsbPrinterService extends PrinterService {
 
       if (portName.isNotEmpty) {
         // ارسال مستقیم به پورت (USB001، COM1 و غیره)
-        await Process.run(
+        final result = await Process.run(
           'cmd',
           ['/c', 'copy', '/b', file.path, r'\\.\' + portName],
         );
+        if (result.exitCode != 0) {
+          throw ProcessException(
+            'cmd',
+            ['/c', 'copy', '/b'],
+            result.stderr.toString(),
+            result.exitCode,
+          );
+        }
       } else {
         // fallback: ارسال از طریق PowerShell با System.Printing
         await _sendViaPowerShell(file.path);
@@ -89,17 +110,15 @@ class UsbPrinterService extends PrinterService {
 
   /// ارسال از طریق .NET System.Printing (برای پرینترهای شبکه یا مدرن)
   Future<void> _sendViaPowerShell(String filePath) async {
-    final escapedPath = filePath.replaceAll(r'\', r'\\');
-    final escapedName = printerName.replaceAll('"', '\\"');
-
     final script = r'''
+param([string]$PrinterName, [string]$FilePath)
 Add-Type -AssemblyName System.Printing
 $ErrorActionPreference = "Stop"
 $ps = New-Object System.Printing.LocalPrintServer
-$pq = $ps.GetPrintQueue("''' + escapedName + r'''")
+$pq = $ps.GetPrintQueue($PrinterName)
 $job = $pq.AddJob("ESC/POS")
 $stream = $job.JobStream
-$bytes = [System.IO.File]::ReadAllBytes("''' + escapedPath + r'''")
+$bytes = [System.IO.File]::ReadAllBytes($FilePath)
 $stream.Write($bytes, 0, $bytes.Length)
 $stream.Close()
 ''';
@@ -108,12 +127,33 @@ $stream.Close()
     final scriptFile = File('${temp.path}\\ps_print_${DateTime.now().millisecondsSinceEpoch}.ps1');
     await scriptFile.writeAsString(script, encoding: const SystemEncoding());
 
-    await Process.run(
+    final result = await Process.run(
       'powershell',
-      ['-ExecutionPolicy', 'Bypass', '-File', scriptFile.path],
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-File',
+        scriptFile.path,
+        '-PrinterName',
+        printerName,
+        '-FilePath',
+        filePath,
+      ],
     );
     await scriptFile.delete().catchError((_) => scriptFile);
+    if (result.exitCode != 0) {
+      throw ProcessException(
+        'powershell',
+        ['-File', scriptFile.path],
+        result.stderr.toString(),
+        result.exitCode,
+      );
+    }
   }
+
+  Future<void> printRaw(List<int> bytes) => _sendRaw(bytes);
 
   @override
   Future<void> disconnect() async {

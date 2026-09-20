@@ -80,4 +80,63 @@ void main() {
     await restoredDb.close();
     await db.close();
   });
+
+  test('بازیابی امن بکاپ، دیتابیس و تصاویر را برمی‌گرداند', () async {
+    final dbFile = File('${temp.path}/live_restore.sqlite');
+    final db = AppDatabase.forTesting(NativeDatabase(dbFile));
+    await db.into(db.customersTable).insert(CustomersTableCompanion.insert(
+          name: 'نسخه داخل بکاپ',
+          updatedAt: DateTime.now(),
+        ));
+    final source = File('${temp.path}/restore_source.png');
+    await source.writeAsBytes(img.encodePng(img.Image(width: 20, height: 20)));
+    final imageName = await ProductImageService.importImage(XFile(source.path));
+    BackupService.configure(db);
+    final backup = await BackupService.createBackup();
+    expect(backup, isNotNull);
+
+    await db.into(db.customersTable).insert(CustomersTableCompanion.insert(
+          name: 'داده بعد از بکاپ',
+          updatedAt: DateTime.now(),
+        ));
+    await ProductImageService.delete(imageName);
+    expect(await ProductImageService.resolve(imageName), isNull);
+
+    expect(
+      await BackupService.restoreBackup(
+        backup!,
+        targetDatabaseFile: dbFile,
+        restartApplication: false,
+      ),
+      isTrue,
+    );
+    final restored = AppDatabase.forTesting(NativeDatabase(dbFile));
+    final customers = await restored.select(restored.customersTable).get();
+    expect(customers.map((row) => row.name), ['نسخه داخل بکاپ']);
+    expect(await ProductImageService.resolve(imageName), isNotNull);
+    await restored.close();
+  });
+
+  test('فایل خراب رد می‌شود و دیتابیس فعلی دست‌نخورده می‌ماند', () async {
+    final dbFile = File('${temp.path}/safe.sqlite');
+    final db = AppDatabase.forTesting(NativeDatabase(dbFile));
+    await db.into(db.customersTable).insert(CustomersTableCompanion.insert(
+          name: 'داده سالم',
+          updatedAt: DateTime.now(),
+        ));
+    BackupService.configure(db);
+    final corrupt = File('${temp.path}/corrupt.zip');
+    await corrupt.writeAsString('not a zip');
+
+    expect(
+      await BackupService.restoreBackup(
+        corrupt,
+        targetDatabaseFile: dbFile,
+        restartApplication: false,
+      ),
+      isFalse,
+    );
+    expect(await db.select(db.customersTable).get(), hasLength(1));
+    await db.close();
+  });
 }

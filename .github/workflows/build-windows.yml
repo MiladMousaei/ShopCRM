@@ -2,6 +2,8 @@ name: Build Windows EXE
 
 on:
   push:
+    branches: [main, master, 'claude/**', 'fix/**']
+  pull_request:
     branches: [main, master, 'claude/**']
   workflow_dispatch:
 
@@ -36,55 +38,55 @@ jobs:
       - name: نصب وابستگی‌ها
         run: flutter pub get
 
+      - name: اعمال و بررسی فرمت
+        run: |
+          dart format .
+          dart format --output=none --set-exit-if-changed .
+
       # ─── ۵. تولید کد خودکار (drift + riverpod) ──────────────────────────────
       - name: تولید کد
         run: dart run build_runner build --delete-conflicting-outputs
 
-      # ─── ۶. ایجاد پروژه ویندوز ──────────────────────────────────────────────
-      - name: ایجاد پروژه ویندوز
-        run: flutter create --platforms=windows . --project-name shop_crm
+      - name: ذخیره خروجی code generation
+        uses: actions/upload-artifact@v4
+        with:
+          name: shopcrm-generated-sources
+          path: |
+            lib/**/*.dart
+            test/**/*.dart
+            pubspec.lock
+          retention-days: 3
 
-      # ─── ۷. آماده‌سازی آیکن و عنوان فارسی ──────────────────────────────────
-      - name: آماده‌سازی آیکن و عنوان پنجره
-        shell: powershell
-        run: |
-          # ساخت پوشه آیکن
-          New-Item -ItemType Directory -Force -Path windows\runner\resources | Out-Null
+      - name: تحلیل استاتیک
+        run: flutter analyze
 
-          # کپی PNG لانچر اندروید
-          Copy-Item android\app\src\main\res\mipmap-xxxhdpi\ic_launcher.png `
-                    windows\runner\resources\app_icon.png
+      - name: اجرای تست‌ها
+        run: flutter test
 
-          # تبدیل PNG به ICO
-          Add-Type -AssemblyName System.Drawing
-          $src  = [System.Drawing.Image]::FromFile("$PWD\windows\runner\resources\app_icon.png")
-          $bmp  = New-Object System.Drawing.Bitmap($src)
-          $ico  = [System.Drawing.Icon]::FromHandle($bmp.GetHicon())
-          $fs   = [System.IO.File]::OpenWrite("$PWD\windows\runner\resources\app_icon.ico")
-          $ico.Save($fs)
-          $fs.Close(); $ico.Dispose(); $bmp.Dispose(); $src.Dispose()
-
-          # جایگزینی عنوان پنجره با نام فارسی
-          $cpp = Get-Content windows\runner\main.cpp -Raw -Encoding UTF8
-          $cpp = $cpp -replace 'window\.Create\(L"[^"]*"', 'window.Create(L"فروشگاه هوشمند"'
-          [System.IO.File]::WriteAllText("$PWD\windows\runner\main.cpp", $cpp, [System.Text.Encoding]::UTF8)
-
-      # ─── ۸. بیلد Release ────────────────────────────────────────────────────
+      # ─── ۶. بیلد Release ────────────────────────────────────────────────────
       - name: بیلد Windows (Release)
         run: flutter build windows --release
 
-      # ─── ۹. فشرده‌سازی خروجی ────────────────────────────────────────────────
+      - name: ساخت بسته MSIX
+        run: dart run msix:create --build-windows false
+
+      # ─── ۷. فشرده‌سازی خروجی ────────────────────────────────────────────────
       - name: فشرده‌سازی خروجی
         shell: powershell
         run: |
           Compress-Archive `
             -Path build\windows\x64\runner\Release\* `
             -DestinationPath shopcrm-windows.zip
+          (Get-FileHash shopcrm-windows.zip -Algorithm SHA256).Hash.ToLower() + `
+            "  shopcrm-windows.zip" | Set-Content shopcrm-windows.zip.sha256
 
-      # ─── ۱۰. آپلود ──────────────────────────────────────────────────────────
+      # ─── ۸. آپلود ───────────────────────────────────────────────────────────
       - name: آپلود فایل ZIP ویندوز
         uses: actions/upload-artifact@v4
         with:
           name: shopcrm-windows-release
-          path: shopcrm-windows.zip
+          path: |
+            shopcrm-windows.zip
+            shopcrm-windows.zip.sha256
+            build/windows/msix/*.msix
           retention-days: 30

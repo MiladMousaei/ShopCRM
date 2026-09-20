@@ -10,6 +10,7 @@ class InvoiceItem extends Equatable {
   final String? productBarcode;
   final int quantity;          // تعداد
   final double unitPrice;      // قیمت واحد در زمان فروش
+  final double purchasePrice;  // قیمت خرید در زمان فروش (برای سود تاریخی)
   final double discountPercent; // درصد تخفیف روی این ردیف (جدا از تخفیف کل)
 
   const InvoiceItem({
@@ -20,6 +21,7 @@ class InvoiceItem extends Equatable {
     this.productBarcode,
     required this.quantity,
     required this.unitPrice,
+    this.purchasePrice = 0,
     this.discountPercent = 0,
   });
 
@@ -40,6 +42,7 @@ class InvoiceItem extends Equatable {
     String? productBarcode,
     int? quantity,
     double? unitPrice,
+    double? purchasePrice,
     double? discountPercent,
   }) {
     return InvoiceItem(
@@ -50,6 +53,7 @@ class InvoiceItem extends Equatable {
       productBarcode: productBarcode ?? this.productBarcode,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
+      purchasePrice: purchasePrice ?? this.purchasePrice,
       discountPercent: discountPercent ?? this.discountPercent,
     );
   }
@@ -62,6 +66,7 @@ class InvoiceItem extends Equatable {
       productBarcode: product.barcode,
       quantity: quantity,
       unitPrice: product.sellPrice, // قیمت فروش فعلی
+      purchasePrice: product.purchasePrice,
     );
   }
 
@@ -72,11 +77,12 @@ class InvoiceItem extends Equatable {
     'product_name': productName,
     'quantity': quantity,
     'unit_price': unitPrice,
+    'purchase_price': purchasePrice,
     'discount_percent': discountPercent,
     'subtotal': subtotal,
   };
 
   @override
   List<Object?> get props =>
-      [productId, quantity, unitPrice, discountPercent];
+      [productId, quantity, unitPrice, purchasePrice, discountPercent];
 }

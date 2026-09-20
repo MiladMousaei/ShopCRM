@@ -49,7 +49,10 @@ void main() async {
     NotificationService.init().catchError((error, stack) {
       return LogService.error('راه‌اندازی اعلان‌ها ناموفق بود', error, stack);
     });
-    BackupService.autoBackupIfNeeded();
+    unawaited(BackupService.autoBackupIfNeeded());
+    Timer.periodic(const Duration(minutes: 30), (_) {
+      unawaited(BackupService.autoBackupIfNeeded());
+    });
     runApp(ProviderScope(
       overrides: [databaseProvider.overrideWithValue(database)],
       child: const ShopCrmApp(),

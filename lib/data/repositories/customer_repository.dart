@@ -34,13 +34,16 @@ class CustomerRepository {
 
   Future<int> saveCustomer(Customer customer) async {
     final companion = CustomersTableCompanion(
-      id: customer.id == 0 ? const Value.absent() : Value(customer.id),
-      serverId: Value(customer.serverId),
+      serverId: customer.id == 0
+          ? Value(customer.serverId)
+          : const Value.absent(),
       name: Value(customer.name),
       phone: Value(customer.phone),
       address: Value(customer.address),
       creditLimit: Value(customer.creditLimit),
-      totalDebt: Value(customer.totalDebt),
+      totalDebt: customer.id == 0
+          ? Value(customer.totalDebt)
+          : const Value.absent(),
       updatedAt: Value(customer.updatedAt),
       syncStatus: Value(customer.syncStatus.name),
     );
@@ -48,7 +51,13 @@ class CustomerRepository {
     if (customer.id == 0) {
       return await _db.customersDao.insertCustomer(companion);
     } else {
-      await _db.customersDao.updateCustomer(companion);
+      final changed = await _db.customersDao.updateCustomer(
+        customer.id,
+        companion,
+      );
+      if (changed != 1) {
+        throw StateError('مشتری برای ویرایش پیدا نشد');
+      }
       return customer.id;
     }
   }

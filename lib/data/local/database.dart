@@ -53,12 +53,21 @@ class AppDatabase extends _$AppDatabase {
 
   /// نسخه schema — با هر تغییر ساختار جدول باید افزایش یابد
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
+          await customStatement('''
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            invoices_invoice_number_unique ON invoices(invoice_number)
+          ''');
+          await customStatement('''
+            CREATE UNIQUE INDEX IF NOT EXISTS products_barcode_unique
+            ON products(barcode COLLATE NOCASE)
+            WHERE barcode IS NOT NULL AND barcode <> ''
+          ''');
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
@@ -83,6 +92,58 @@ class AppDatabase extends _$AppDatabase {
                  updated_at, updated_at, 1
           FROM customers WHERE total_debt > 0
         ''');
+          }
+          if (from < 5) {
+            final columns = await customSelect(
+              "PRAGMA table_info('invoice_items')",
+            ).get();
+            final hasPurchasePrice = columns.any(
+              (row) => row.read<String>('name') == 'purchase_price',
+            );
+            if (!hasPurchasePrice) {
+              await m.addColumn(
+                invoiceItemsTable,
+                invoiceItemsTable.purchasePrice,
+              );
+              await customStatement('''
+                UPDATE invoice_items
+                SET purchase_price = COALESCE(
+                  (SELECT purchase_price FROM products
+                   WHERE products.id = invoice_items.product_id), 0)
+              ''');
+            }
+
+            // هیچ رکورد قدیمی حذف نمی‌شود. در صورت وجود مقدار تکراری، شناسه
+            // همان رکورد به انتهای مقدار افزوده می‌شود و سپس قید یکتا می‌آید.
+            await customStatement('''
+              UPDATE invoices
+              SET invoice_number = invoice_number || '-DUP-' || id
+              WHERE id NOT IN (
+                SELECT MIN(id) FROM invoices GROUP BY invoice_number
+              )
+            ''');
+            await customStatement('''
+              CREATE UNIQUE INDEX IF NOT EXISTS
+              invoices_invoice_number_unique ON invoices(invoice_number)
+            ''');
+            await customStatement('''
+              UPDATE products SET barcode = trim(barcode)
+              WHERE barcode IS NOT NULL
+            ''');
+            await customStatement('''
+              UPDATE products
+              SET barcode = barcode || '-DUP-' || id
+              WHERE barcode IS NOT NULL AND barcode <> '' AND id NOT IN (
+                SELECT MIN(id) FROM products
+                WHERE barcode IS NOT NULL AND barcode <> ''
+                GROUP BY barcode COLLATE NOCASE
+              )
+            ''');
+            await customStatement('''
+              CREATE UNIQUE INDEX IF NOT EXISTS products_barcode_unique
+              ON products(barcode COLLATE NOCASE)
+              WHERE barcode IS NOT NULL AND barcode <> ''
+            ''');
           }
         },
       );

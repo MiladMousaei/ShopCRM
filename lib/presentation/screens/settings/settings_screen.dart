@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
@@ -509,6 +510,48 @@ class _BackupSectionState extends State<_BackupSection> {
     if (mounted) setState(() => _autoEnabled = value);
   }
 
+  Future<void> _restoreBackup() async {
+    final selected = await openFile(
+      acceptedTypeGroups: const [
+        XTypeGroup(label: 'پشتیبان ShopCRM', extensions: ['zip']),
+      ],
+    );
+    if (selected == null || !mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('بازیابی پشتیبان'),
+          content: const Text(
+            'ابتدا یک بکاپ ایمنی ساخته می‌شود. سپس اطلاعات فایل انتخابی '
+            'بازیابی و برنامه به‌صورت خودکار دوباره اجرا خواهد شد. ادامه می‌دهید؟',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('بازیابی'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _isLoading = true);
+    final restored = await BackupService.restoreBackup(File(selected.path));
+    if (mounted && !restored) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('فایل پشتیبان معتبر نیست یا بازیابی ناموفق بود'),
+        backgroundColor: AppColors.error,
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -527,6 +570,16 @@ class _BackupSectionState extends State<_BackupSection> {
                   child: const Text('بکاپ بگیر',
                       style: TextStyle(fontFamily: 'Vazirmatn')),
                 ),
+        ),
+        const Divider(height: 1),
+        _SettingsTile(
+          icon: Icons.restore_outlined,
+          title: 'بازیابی پشتیبان',
+          subtitle: 'بازیابی امن دیتابیس و تصاویر از فایل ZIP',
+          trailing: TextButton(
+            onPressed: _isLoading ? null : _restoreBackup,
+            child: const Text('انتخاب فایل'),
+          ),
         ),
         const Divider(height: 1),
         _SettingsTile(
@@ -750,7 +803,9 @@ class _PosSettingsTileState extends State<_PosSettingsTile> {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
       setState(() {
-        _posMode = prefs.getString('pos_mode') ?? 'manual';
+        // اتصال واقعی پوز هنوز پیاده‌سازی نشده است؛ مقدار قدیمی auto نیز
+        // عمداً به حالت دستی برگردانده می‌شود تا پرداخت جعلی انجام نشود.
+        _posMode = 'manual';
         _posPort = prefs.getString('pos_port') ?? 'COM1';
       });
     }
@@ -758,7 +813,7 @@ class _PosSettingsTileState extends State<_PosSettingsTile> {
 
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('pos_mode', _posMode);
+    await prefs.setString('pos_mode', 'manual');
     await prefs.setString('pos_port', _posPort);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -808,11 +863,13 @@ class _PosSettingsTileState extends State<_PosSettingsTile> {
                     Radio<String>(
                       value: 'auto',
                       groupValue: tempMode,
-                      onChanged: (v) => setSt(() => tempMode = v!),
+                      onChanged: null,
                     ),
-                    const Text('اتوماتیک (پورت سریال)',
+                    const Expanded(
+                      child: Text('اتوماتیک (غیرفعال تا اتصال واقعی)',
                         style:
                             TextStyle(fontFamily: 'Vazirmatn', fontSize: 13)),
+                    ),
                   ],
                 ),
                 if (tempMode == 'auto') ...[
@@ -878,7 +935,7 @@ class _PosSettingsTileState extends State<_PosSettingsTile> {
 
   @override
   Widget build(BuildContext context) {
-    final modeLabel = _posMode == 'manual' ? 'دستی' : 'اتوماتیک - $_posPort';
+    const modeLabel = 'دستی — حالت اتوماتیک فعلاً غیرفعال است';
     return _SettingsTile(
       icon: Icons.credit_card,
       iconColor: const Color(0xFF00695C),

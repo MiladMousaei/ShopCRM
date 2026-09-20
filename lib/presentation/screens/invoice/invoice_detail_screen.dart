@@ -11,8 +11,12 @@ import '../../../core/utils/date_converter.dart';
 import '../../../domain/models/invoice.dart';
 import '../../../domain/models/invoice_item.dart';
 import '../../providers/invoice_provider.dart';
+import '../../providers/product_provider.dart';
+import '../../providers/customer_provider.dart';
+import '../../providers/report_provider.dart';
 import '../../providers/printer_provider.dart';
 import '../../widgets/common/app_header_back_button.dart';
+import '../../widgets/common/confirm_dialog.dart';
 import '../../../services/pdf_service.dart';
 import 'package:printing/printing.dart';
 
@@ -115,11 +119,85 @@ class _InvoiceDetailBody extends ConsumerWidget {
 
             // ─── خلاصه مالی ─────────────────────────────────────
             _buildFinancialSummary(invoice),
+            if (invoice.status == InvoiceStatus.completed) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _changeStatus(
+                        context,
+                        ref,
+                        invoice,
+                        InvoiceStatus.cancelled,
+                      ),
+                      icon: const Icon(Icons.cancel_outlined),
+                      label: const Text('لغو فاکتور'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _changeStatus(
+                        context,
+                        ref,
+                        invoice,
+                        InvoiceStatus.refunded,
+                      ),
+                      icon: const Icon(Icons.assignment_return_outlined),
+                      label: const Text('مرجوعی'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 32),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _changeStatus(
+    BuildContext context,
+    WidgetRef ref,
+    Invoice invoice,
+    InvoiceStatus status,
+  ) async {
+    final isRefund = status == InvoiceStatus.refunded;
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: isRefund ? 'مرجوعی فاکتور' : 'لغو فاکتور',
+      message:
+          'موجودی کالاها بازگردانده و سند بدهی مرتبط ابطال می‌شود. ادامه می‌دهید؟',
+      confirmText: isRefund ? 'ثبت مرجوعی' : 'لغو فاکتور',
+      confirmColor: isRefund ? AppColors.warning : AppColors.error,
+    );
+    if (confirmed != true) return;
+    try {
+      await ref
+          .read(invoiceRepositoryProvider)
+          .updateStatus(invoice.id, status);
+      ref.invalidate(invoiceByIdProvider(invoice.id));
+      ref.invalidate(todaySalesTotalProvider);
+      ref.invalidate(reportDataProvider);
+      ref.invalidate(weeklySalesProvider);
+      ref.invalidate(lowStockProductsProvider);
+      ref.invalidate(totalDebtAmountProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isRefund ? 'مرجوعی ثبت شد' : 'فاکتور لغو شد'),
+          backgroundColor: AppColors.success,
+        ));
+      }
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('انجام عملیات ناموفق بود: $error'),
+          backgroundColor: AppColors.error,
+        ));
+      }
+    }
   }
 
   /// هدر فاکتور: شماره، تاریخ، نام مشتری، روش پرداخت

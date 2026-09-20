@@ -10,12 +10,19 @@ import '../../providers/invoice_provider.dart';
 import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/loading_overlay.dart';
 
-class InvoiceListScreen extends ConsumerWidget {
+class InvoiceListScreen extends ConsumerStatefulWidget {
   const InvoiceListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final invoices = ref.watch(invoicesStreamProvider);
+  ConsumerState<InvoiceListScreen> createState() => _InvoiceListScreenState();
+}
+
+class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
+  int _page = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final invoices = ref.watch(invoicePageProvider(_page));
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -25,18 +32,57 @@ class InvoiceListScreen extends ConsumerWidget {
           title: const Text(AppStrings.invoices),
         ),
         body: invoices.when(
-          data: (list) => list.isEmpty
+          data: (page) => page.invoices.isEmpty
               ? const Center(
                   child: Text('هیچ فاکتوری ثبت نشده',
                       style: TextStyle(
                           fontFamily: 'Vazirmatn',
                           color: AppColors.textSecondary)),
                 )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: list.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (_, i) => _InvoiceCard(invoice: list[i]),
+              : Column(
+                  children: [
+                    Expanded(
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: page.invoices.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: 8),
+                        itemBuilder: (_, i) =>
+                            _InvoiceCard(invoice: page.invoices[i]),
+                      ),
+                    ),
+                    if (_page > 0 || page.hasNext)
+                      SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: _page == 0
+                                    ? null
+                                    : () => setState(() => _page--),
+                                icon: const Icon(Icons.chevron_right),
+                                label: const Text('قبلی'),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text('صفحه ${_page + 1}'),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: page.hasNext
+                                    ? () => setState(() => _page++)
+                                    : null,
+                                icon: const Icon(Icons.chevron_left),
+                                label: const Text('بعدی'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
           loading: () => const ShimmerList(),
           error: (e, _) => Center(
@@ -46,7 +92,7 @@ class InvoiceListScreen extends ConsumerWidget {
                 const Text('خطا در بارگذاری فاکتورها',
                     style: TextStyle(fontFamily: 'Vazirmatn')),
                 TextButton(
-                  onPressed: () => ref.invalidate(invoicesStreamProvider),
+                  onPressed: () => ref.invalidate(invoicePageProvider(_page)),
                   child: const Text(AppStrings.retry,
                       style: TextStyle(fontFamily: 'Vazirmatn')),
                 ),

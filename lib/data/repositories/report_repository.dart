@@ -48,6 +48,7 @@ class ReportRepository {
 
     for (final invoice in invoices) {
       totalSales += invoice.finalAmount;
+      final invoiceDiscount = invoice.discountAmount;
 
       // فروش روزانه
       final dateKey = '${invoice.createdAt.year}-${invoice.createdAt.month.toString().padLeft(2, '0')}-${invoice.createdAt.day.toString().padLeft(2, '0')}';
@@ -55,6 +56,12 @@ class ReportRepository {
 
       // پرفروش‌ترین
       for (final item in invoice.items) {
+        final discountShare = invoice.totalAmount == 0
+            ? 0
+            : invoiceDiscount * (item.subtotal / invoice.totalAmount);
+        final netRevenue = item.subtotal - discountShare;
+        totalProfit +=
+            netRevenue - (item.purchasePrice * item.quantity);
         final existing = productMap[item.productId];
         if (existing != null) {
           productMap[item.productId] = TopProduct(
@@ -88,8 +95,9 @@ class ReportRepository {
 
   Future<Map<String, double>> getWeeklySales() async {
     final now = DateTime.now();
-    final from = now.subtract(const Duration(days: 6));
-    final to = now;
+    final firstDay = now.subtract(const Duration(days: 6));
+    final from = DateTime(firstDay.year, firstDay.month, firstDay.day);
+    final to = DateTime(now.year, now.month, now.day);
     final invoices = await _invoiceRepo.getInvoicesByPeriod(from, to);
 
     final Map<String, double> result = {};

@@ -32,7 +32,9 @@ class ProductsDao extends DatabaseAccessor<AppDatabase>
 
   /// پیدا کردن با بارکد (برای اسکن)
   Future<ProductsTableData?> findByBarcode(String barcode) =>
-      (select(productsTable)..where((t) => t.barcode.equals(barcode)))
+      (select(productsTable)
+            ..where((t) => t.barcode.equals(barcode.trim()))
+            ..where((t) => t.isActive.equals(true)))
           .getSingleOrNull();
 
   /// پیدا کردن با شناسه
@@ -44,8 +46,7 @@ class ProductsDao extends DatabaseAccessor<AppDatabase>
       (select(productsTable)
             ..where((t) => t.isActive.equals(true))
             ..where((t) =>
-                t.stockQuantity.isSmallerOrEqualValue(0) |
-                t.stockQuantity.isSmallerThan(t.minStockAlert)))
+                t.stockQuantity.isSmallerOrEqual(t.minStockAlert)))
           .get();
 
   // ─── نوشتن ───────────────────────────────────────────────────
@@ -55,8 +56,8 @@ class ProductsDao extends DatabaseAccessor<AppDatabase>
       into(productsTable).insert(product);
 
   /// بروزرسانی محصول موجود
-  Future<bool> updateProduct(ProductsTableCompanion product) =>
-      update(productsTable).replace(product);
+  Future<int> updateProduct(int id, ProductsTableCompanion product) =>
+      (update(productsTable)..where((t) => t.id.equals(id))).write(product);
 
   /// فقط موجودی را بروز کن (بهینه برای بعد از فروش)
   Future<void> updateStock(int productId, int newStock) =>

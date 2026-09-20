@@ -6,6 +6,25 @@ final invoicesStreamProvider = StreamProvider<List<Invoice>>((ref) {
   return ref.watch(invoiceRepositoryProvider).watchInvoices();
 });
 
+class InvoicePage {
+  final List<Invoice> invoices;
+  final bool hasNext;
+
+  const InvoicePage(this.invoices, this.hasNext);
+}
+
+final invoicePageProvider =
+    StreamProvider.family<InvoicePage, int>((ref, page) {
+  const pageSize = 50;
+  return ref
+      .watch(invoiceRepositoryProvider)
+      .watchInvoices(limit: pageSize + 1, offset: page * pageSize)
+      .map((rows) => InvoicePage(
+            rows.take(pageSize).toList(),
+            rows.length > pageSize,
+          ));
+});
+
 final recentInvoicesProvider = StreamProvider<List<Invoice>>((ref) {
   return ref.watch(invoiceRepositoryProvider).watchRecentInvoices();
 });

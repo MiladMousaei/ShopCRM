@@ -36,18 +36,23 @@ class ProductRepository {
   }
 
   Future<int> saveProduct(Product product) async {
+    final barcode = product.barcode?.trim();
     final companion = ProductsTableCompanion(
-      id: product.id == 0 ? const Value.absent() : Value(product.id),
-      serverId: Value(product.serverId),
-      barcode: Value(product.barcode),
+      serverId: product.id == 0
+          ? Value(product.serverId)
+          : const Value.absent(),
+      barcode: Value(barcode == null || barcode.isEmpty ? null : barcode),
       name: Value(product.name),
-      categoryId: Value(product.categoryId),
+      categoryId: product.id == 0
+          ? Value(product.categoryId)
+          : const Value.absent(),
       purchasePrice: Value(product.purchasePrice),
       sellPrice: Value(product.sellPrice),
       stockQuantity: Value(product.stockQuantity),
       minStockAlert: Value(product.minStockAlert),
       imageUrl: Value(product.imageUrl),
-      isActive: Value(product.isActive),
+      isActive:
+          product.id == 0 ? Value(product.isActive) : const Value.absent(),
       updatedAt: Value(product.updatedAt),
       syncStatus: Value(product.syncStatus.name),
     );
@@ -55,13 +60,18 @@ class ProductRepository {
     if (product.id == 0) {
       return await _db.productsDao.insertProduct(companion);
     } else {
-      await _db.productsDao.updateProduct(companion);
+      final changed = await _db.productsDao.updateProduct(product.id, companion);
+      if (changed != 1) {
+        throw StateError('محصول برای ویرایش پیدا نشد');
+      }
       return product.id;
     }
   }
 
-  Future<void> updateStock(int productId, int newStock) =>
-      _db.productsDao.updateStock(productId, newStock);
+  Future<void> updateStock(int productId, int newStock) async {
+    if (newStock < 0) throw ArgumentError('موجودی نمی‌تواند منفی باشد');
+    await _db.productsDao.updateStock(productId, newStock);
+  }
 
   Future<void> deleteProduct(int id) async {
     final product = await findById(id);

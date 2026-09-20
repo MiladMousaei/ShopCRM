@@ -13,6 +13,7 @@ import '../../../data/local/database.dart';
 import '../../../domain/models/inventory_log.dart';
 import '../../../domain/models/product.dart';
 import '../../../services/notification_service.dart';
+import '../../../services/log_service.dart';
 import '../../providers/product_provider.dart';
 import '../../widgets/common/app_header_back_button.dart';
 
@@ -123,53 +124,59 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final repo = ref.read(productRepositoryProvider);
-      final product = _selectedProduct!;
-
-      // محاسبه موجودی جدید بر اساس نوع تراکنش
-      int previousStock = product.stockQuantity;
-      int newStock;
-
-      switch (_selectedType) {
-        case InventoryLogType.stockIn:
-          // ورود کالا: موجودی اضافه می‌شود
-          newStock = previousStock + quantity;
-          break;
-        case InventoryLogType.stockOut:
-          // خروج کالا: موجودی کم می‌شود (حداقل صفر)
-          newStock = (previousStock - quantity).clamp(0, 999999);
-          break;
-        case InventoryLogType.adjust:
-          // تعدیل: مستقیماً موجودی جدید تنظیم می‌شود
-          newStock = quantity;
-          break;
-        default:
-          newStock = previousStock;
-      }
-
-      // بروزرسانی موجودی محصول در دیتابیس
-      await repo.updateStock(product.id, newStock);
-
-      // ارسال اعلان اگر موجودی به زیر حداقل رسید
-      if (newStock <= product.minStockAlert) {
-        NotificationService.showLowStockAlert(product.name, newStock);
-      }
-
-      // ثبت لاگ انبار برای ردیابی تاریخچه تغییرات
       final db = ref.read(databaseProvider);
-      await db.into(db.inventoryLogsTable).insert(
-            InventoryLogsTableCompanion.insert(
-              productId: product.id,
-              type: _selectedType.name,
-              quantity: quantity,
-              previousStock: previousStock,
-              newStock: newStock,
-              reason: drift.Value(_reasonController.text.isEmpty
-                  ? null
-                  : _reasonController.text),
-              createdAt: DateTime.now(),
-            ),
-          );
+      final productId = _selectedProduct!.id;
+      late int previousStock;
+      late int newStock;
+      late String productName;
+      late int minStockAlert;
+      await db.transaction(() async {
+        final fresh = await db.productsDao.findById(productId);
+        if (fresh == null || !fresh.isActive) {
+          throw StateError('محصول حذف شده یا در دسترس نیست');
+        }
+        previousStock = fresh.stockQuantity;
+        productName = fresh.name;
+        minStockAlert = fresh.minStockAlert;
+        switch (_selectedType) {
+          case InventoryLogType.stockIn:
+            newStock = previousStock + quantity;
+            break;
+          case InventoryLogType.stockOut:
+            if (quantity > previousStock) {
+              throw StateError('موجودی برای خروج این تعداد کافی نیست');
+            }
+            newStock = previousStock - quantity;
+            break;
+          case InventoryLogType.adjust:
+            newStock = quantity;
+            break;
+          default:
+            throw StateError('نوع عملیات انبار نامعتبر است');
+        }
+        await db.productsDao.updateStock(productId, newStock);
+        await db.into(db.inventoryLogsTable).insert(
+              InventoryLogsTableCompanion.insert(
+                productId: productId,
+                type: _selectedType.name,
+                quantity: quantity,
+                previousStock: previousStock,
+                newStock: newStock,
+                reason: drift.Value(_reasonController.text.isEmpty
+                    ? null
+                    : _reasonController.text),
+                createdAt: DateTime.now(),
+              ),
+            );
+      });
+
+      if (newStock <= minStockAlert) {
+        try {
+          await NotificationService.showLowStockAlert(productName, newStock);
+        } catch (error, stack) {
+          await LogService.error('نمایش اعلان کمبود موجودی ناموفق بود', error, stack);
+        }
+      }
 
       if (mounted) {
         // نمایش پیام موفقیت و برگشت به صفحه قبل

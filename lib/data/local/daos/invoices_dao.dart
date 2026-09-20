@@ -34,10 +34,13 @@ class InvoicesDao extends DatabaseAccessor<AppDatabase>
   // ─── خواندن فاکتورها ──────────────────────────────────────────
 
   /// استریم فاکتورها برای UI (جدیدترین اول)
-  Stream<List<InvoicesTableData>> watchInvoices({int limit = 50}) =>
+  Stream<List<InvoicesTableData>> watchInvoices({
+    int limit = 50,
+    int offset = 0,
+  }) =>
       (select(invoicesTable)
             ..orderBy([(t) => OrderingTerm.desc(t.createdAt)])
-            ..limit(limit))
+            ..limit(limit, offset: offset))
           .watch();
 
   /// لیست فاکتورها با صفحه‌بندی
@@ -58,8 +61,10 @@ class InvoicesDao extends DatabaseAccessor<AppDatabase>
       second: 0,
       millisecond: 0,
     );
+    final endOfDay = startOfDay.add(const Duration(days: 1));
     return (select(invoicesTable)
           ..where((t) => t.createdAt.isBiggerOrEqualValue(startOfDay))
+          ..where((t) => t.createdAt.isSmallerThanValue(endOfDay))
           ..where((t) => t.status.equals('completed')))
         .get();
   }
@@ -68,13 +73,17 @@ class InvoicesDao extends DatabaseAccessor<AppDatabase>
   Future<List<InvoicesTableData>> getInvoicesByPeriod(
     DateTime from,
     DateTime to,
-  ) =>
-      (select(invoicesTable)
-            ..where((t) => t.createdAt.isBiggerOrEqualValue(from))
-            ..where((t) => t.createdAt.isSmallerOrEqualValue(to))
+  ) {
+    final start = DateTime(from.year, from.month, from.day);
+    final endExclusive = DateTime(to.year, to.month, to.day)
+        .add(const Duration(days: 1));
+    return (select(invoicesTable)
+          ..where((t) => t.createdAt.isBiggerOrEqualValue(start))
+          ..where((t) => t.createdAt.isSmallerThanValue(endExclusive))
             ..where((t) => t.status.equals('completed'))
-            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-          .get();
+          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+        .get();
+  }
 
   /// یک فاکتور با شناسه
   Future<InvoicesTableData?> findById(int id) =>

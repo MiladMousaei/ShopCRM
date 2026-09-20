@@ -1934,6 +1934,14 @@ class $InvoiceItemsTableTable extends InvoiceItemsTable
   late final GeneratedColumn<double> unitPrice = GeneratedColumn<double>(
       'unit_price', aliasedName, false,
       type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _purchasePriceMeta =
+      const VerificationMeta('purchasePrice');
+  @override
+  late final GeneratedColumn<double> purchasePrice = GeneratedColumn<double>(
+      'purchase_price', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   static const VerificationMeta _discountPercentMeta =
       const VerificationMeta('discountPercent');
   @override
@@ -1957,6 +1965,7 @@ class $InvoiceItemsTableTable extends InvoiceItemsTable
         productBarcode,
         quantity,
         unitPrice,
+        purchasePrice,
         discountPercent,
         subtotal
       ];
@@ -2012,6 +2021,12 @@ class $InvoiceItemsTableTable extends InvoiceItemsTable
     } else if (isInserting) {
       context.missing(_unitPriceMeta);
     }
+    if (data.containsKey('purchase_price')) {
+      context.handle(
+          _purchasePriceMeta,
+          purchasePrice.isAcceptableOrUnknown(
+              data['purchase_price']!, _purchasePriceMeta));
+    }
     if (data.containsKey('discount_percent')) {
       context.handle(
           _discountPercentMeta,
@@ -2047,6 +2062,8 @@ class $InvoiceItemsTableTable extends InvoiceItemsTable
           .read(DriftSqlType.int, data['${effectivePrefix}quantity'])!,
       unitPrice: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}unit_price'])!,
+      purchasePrice: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}purchase_price'])!,
       discountPercent: attachedDatabase.typeMapping.read(
           DriftSqlType.double, data['${effectivePrefix}discount_percent'])!,
       subtotal: attachedDatabase.typeMapping
@@ -2069,6 +2086,7 @@ class InvoiceItemsTableData extends DataClass
   final String? productBarcode;
   final int quantity;
   final double unitPrice;
+  final double purchasePrice;
   final double discountPercent;
   final double subtotal;
   const InvoiceItemsTableData(
@@ -2079,6 +2097,7 @@ class InvoiceItemsTableData extends DataClass
       this.productBarcode,
       required this.quantity,
       required this.unitPrice,
+      required this.purchasePrice,
       required this.discountPercent,
       required this.subtotal});
   @override
@@ -2093,6 +2112,7 @@ class InvoiceItemsTableData extends DataClass
     }
     map['quantity'] = Variable<int>(quantity);
     map['unit_price'] = Variable<double>(unitPrice);
+    map['purchase_price'] = Variable<double>(purchasePrice);
     map['discount_percent'] = Variable<double>(discountPercent);
     map['subtotal'] = Variable<double>(subtotal);
     return map;
@@ -2109,6 +2129,7 @@ class InvoiceItemsTableData extends DataClass
           : Value(productBarcode),
       quantity: Value(quantity),
       unitPrice: Value(unitPrice),
+      purchasePrice: Value(purchasePrice),
       discountPercent: Value(discountPercent),
       subtotal: Value(subtotal),
     );
@@ -2125,6 +2146,7 @@ class InvoiceItemsTableData extends DataClass
       productBarcode: serializer.fromJson<String?>(json['productBarcode']),
       quantity: serializer.fromJson<int>(json['quantity']),
       unitPrice: serializer.fromJson<double>(json['unitPrice']),
+      purchasePrice: serializer.fromJson<double>(json['purchasePrice']),
       discountPercent: serializer.fromJson<double>(json['discountPercent']),
       subtotal: serializer.fromJson<double>(json['subtotal']),
     );
@@ -2140,6 +2162,7 @@ class InvoiceItemsTableData extends DataClass
       'productBarcode': serializer.toJson<String?>(productBarcode),
       'quantity': serializer.toJson<int>(quantity),
       'unitPrice': serializer.toJson<double>(unitPrice),
+      'purchasePrice': serializer.toJson<double>(purchasePrice),
       'discountPercent': serializer.toJson<double>(discountPercent),
       'subtotal': serializer.toJson<double>(subtotal),
     };
@@ -2153,6 +2176,7 @@ class InvoiceItemsTableData extends DataClass
           Value<String?> productBarcode = const Value.absent(),
           int? quantity,
           double? unitPrice,
+          double? purchasePrice,
           double? discountPercent,
           double? subtotal}) =>
       InvoiceItemsTableData(
@@ -2164,6 +2188,7 @@ class InvoiceItemsTableData extends DataClass
             productBarcode.present ? productBarcode.value : this.productBarcode,
         quantity: quantity ?? this.quantity,
         unitPrice: unitPrice ?? this.unitPrice,
+        purchasePrice: purchasePrice ?? this.purchasePrice,
         discountPercent: discountPercent ?? this.discountPercent,
         subtotal: subtotal ?? this.subtotal,
       );
@@ -2179,6 +2204,9 @@ class InvoiceItemsTableData extends DataClass
           : this.productBarcode,
       quantity: data.quantity.present ? data.quantity.value : this.quantity,
       unitPrice: data.unitPrice.present ? data.unitPrice.value : this.unitPrice,
+      purchasePrice: data.purchasePrice.present
+          ? data.purchasePrice.value
+          : this.purchasePrice,
       discountPercent: data.discountPercent.present
           ? data.discountPercent.value
           : this.discountPercent,
@@ -2196,6 +2224,7 @@ class InvoiceItemsTableData extends DataClass
           ..write('productBarcode: $productBarcode, ')
           ..write('quantity: $quantity, ')
           ..write('unitPrice: $unitPrice, ')
+          ..write('purchasePrice: $purchasePrice, ')
           ..write('discountPercent: $discountPercent, ')
           ..write('subtotal: $subtotal')
           ..write(')'))
@@ -2203,8 +2232,17 @@ class InvoiceItemsTableData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, invoiceId, productId, productName,
-      productBarcode, quantity, unitPrice, discountPercent, subtotal);
+  int get hashCode => Object.hash(
+      id,
+      invoiceId,
+      productId,
+      productName,
+      productBarcode,
+      quantity,
+      unitPrice,
+      purchasePrice,
+      discountPercent,
+      subtotal);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2216,6 +2254,7 @@ class InvoiceItemsTableData extends DataClass
           other.productBarcode == this.productBarcode &&
           other.quantity == this.quantity &&
           other.unitPrice == this.unitPrice &&
+          other.purchasePrice == this.purchasePrice &&
           other.discountPercent == this.discountPercent &&
           other.subtotal == this.subtotal);
 }
@@ -2229,6 +2268,7 @@ class InvoiceItemsTableCompanion
   final Value<String?> productBarcode;
   final Value<int> quantity;
   final Value<double> unitPrice;
+  final Value<double> purchasePrice;
   final Value<double> discountPercent;
   final Value<double> subtotal;
   const InvoiceItemsTableCompanion({
@@ -2239,6 +2279,7 @@ class InvoiceItemsTableCompanion
     this.productBarcode = const Value.absent(),
     this.quantity = const Value.absent(),
     this.unitPrice = const Value.absent(),
+    this.purchasePrice = const Value.absent(),
     this.discountPercent = const Value.absent(),
     this.subtotal = const Value.absent(),
   });
@@ -2250,6 +2291,7 @@ class InvoiceItemsTableCompanion
     this.productBarcode = const Value.absent(),
     required int quantity,
     required double unitPrice,
+    this.purchasePrice = const Value.absent(),
     this.discountPercent = const Value.absent(),
     required double subtotal,
   })  : invoiceId = Value(invoiceId),
@@ -2266,6 +2308,7 @@ class InvoiceItemsTableCompanion
     Expression<String>? productBarcode,
     Expression<int>? quantity,
     Expression<double>? unitPrice,
+    Expression<double>? purchasePrice,
     Expression<double>? discountPercent,
     Expression<double>? subtotal,
   }) {
@@ -2277,6 +2320,7 @@ class InvoiceItemsTableCompanion
       if (productBarcode != null) 'product_barcode': productBarcode,
       if (quantity != null) 'quantity': quantity,
       if (unitPrice != null) 'unit_price': unitPrice,
+      if (purchasePrice != null) 'purchase_price': purchasePrice,
       if (discountPercent != null) 'discount_percent': discountPercent,
       if (subtotal != null) 'subtotal': subtotal,
     });
@@ -2290,6 +2334,7 @@ class InvoiceItemsTableCompanion
       Value<String?>? productBarcode,
       Value<int>? quantity,
       Value<double>? unitPrice,
+      Value<double>? purchasePrice,
       Value<double>? discountPercent,
       Value<double>? subtotal}) {
     return InvoiceItemsTableCompanion(
@@ -2300,6 +2345,7 @@ class InvoiceItemsTableCompanion
       productBarcode: productBarcode ?? this.productBarcode,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
+      purchasePrice: purchasePrice ?? this.purchasePrice,
       discountPercent: discountPercent ?? this.discountPercent,
       subtotal: subtotal ?? this.subtotal,
     );
@@ -2329,6 +2375,9 @@ class InvoiceItemsTableCompanion
     if (unitPrice.present) {
       map['unit_price'] = Variable<double>(unitPrice.value);
     }
+    if (purchasePrice.present) {
+      map['purchase_price'] = Variable<double>(purchasePrice.value);
+    }
     if (discountPercent.present) {
       map['discount_percent'] = Variable<double>(discountPercent.value);
     }
@@ -2348,6 +2397,7 @@ class InvoiceItemsTableCompanion
           ..write('productBarcode: $productBarcode, ')
           ..write('quantity: $quantity, ')
           ..write('unitPrice: $unitPrice, ')
+          ..write('purchasePrice: $purchasePrice, ')
           ..write('discountPercent: $discountPercent, ')
           ..write('subtotal: $subtotal')
           ..write(')'))
@@ -5868,6 +5918,7 @@ typedef $$InvoiceItemsTableTableCreateCompanionBuilder
   Value<String?> productBarcode,
   required int quantity,
   required double unitPrice,
+  Value<double> purchasePrice,
   Value<double> discountPercent,
   required double subtotal,
 });
@@ -5880,6 +5931,7 @@ typedef $$InvoiceItemsTableTableUpdateCompanionBuilder
   Value<String?> productBarcode,
   Value<int> quantity,
   Value<double> unitPrice,
+  Value<double> purchasePrice,
   Value<double> discountPercent,
   Value<double> subtotal,
 });
@@ -5931,6 +5983,10 @@ class $$InvoiceItemsTableTableFilterComposer
 
   ColumnFilters<double> get unitPrice => $composableBuilder(
       column: $table.unitPrice, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get purchasePrice => $composableBuilder(
+      column: $table.purchasePrice,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<double> get discountPercent => $composableBuilder(
       column: $table.discountPercent,
@@ -5988,6 +6044,10 @@ class $$InvoiceItemsTableTableOrderingComposer
   ColumnOrderings<double> get unitPrice => $composableBuilder(
       column: $table.unitPrice, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<double> get purchasePrice => $composableBuilder(
+      column: $table.purchasePrice,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<double> get discountPercent => $composableBuilder(
       column: $table.discountPercent,
       builder: (column) => ColumnOrderings(column));
@@ -6042,6 +6102,9 @@ class $$InvoiceItemsTableTableAnnotationComposer
 
   GeneratedColumn<double> get unitPrice =>
       $composableBuilder(column: $table.unitPrice, builder: (column) => column);
+
+  GeneratedColumn<double> get purchasePrice => $composableBuilder(
+      column: $table.purchasePrice, builder: (column) => column);
 
   GeneratedColumn<double> get discountPercent => $composableBuilder(
       column: $table.discountPercent, builder: (column) => column);
@@ -6102,6 +6165,7 @@ class $$InvoiceItemsTableTableTableManager extends RootTableManager<
             Value<String?> productBarcode = const Value.absent(),
             Value<int> quantity = const Value.absent(),
             Value<double> unitPrice = const Value.absent(),
+            Value<double> purchasePrice = const Value.absent(),
             Value<double> discountPercent = const Value.absent(),
             Value<double> subtotal = const Value.absent(),
           }) =>
@@ -6113,6 +6177,7 @@ class $$InvoiceItemsTableTableTableManager extends RootTableManager<
             productBarcode: productBarcode,
             quantity: quantity,
             unitPrice: unitPrice,
+            purchasePrice: purchasePrice,
             discountPercent: discountPercent,
             subtotal: subtotal,
           ),
@@ -6124,6 +6189,7 @@ class $$InvoiceItemsTableTableTableManager extends RootTableManager<
             Value<String?> productBarcode = const Value.absent(),
             required int quantity,
             required double unitPrice,
+            Value<double> purchasePrice = const Value.absent(),
             Value<double> discountPercent = const Value.absent(),
             required double subtotal,
           }) =>
@@ -6135,6 +6201,7 @@ class $$InvoiceItemsTableTableTableManager extends RootTableManager<
             productBarcode: productBarcode,
             quantity: quantity,
             unitPrice: unitPrice,
+            purchasePrice: purchasePrice,
             discountPercent: discountPercent,
             subtotal: subtotal,
           ),

@@ -4,10 +4,7 @@ import '../../domain/models/invoice_item.dart';
 import '../../domain/models/product.dart';
 import '../../domain/models/customer.dart';
 import '../../data/repositories/invoice_repository.dart';
-import '../../data/repositories/product_repository.dart';
 import '../../data/repositories/customer_repository.dart';
-import '../../data/repositories/ledger_repository.dart';
-import '../../data/local/database.dart';
 import 'product_provider.dart';
 
 final invoiceRepositoryProvider = Provider<InvoiceRepository>((ref) {
@@ -94,22 +91,31 @@ class CartState {
 /// منطق مدیریت سبد خرید
 class CartNotifier extends StateNotifier<CartState> {
   final InvoiceRepository _invoiceRepo;
-  final ProductRepository _productRepo;
-  final LedgerRepository _ledgerRepo;
-  final AppDatabase _db;
 
-  CartNotifier(this._invoiceRepo, this._productRepo, this._ledgerRepo, this._db)
-      : super(const CartState());
+  CartNotifier(this._invoiceRepo) : super(const CartState());
 
   /// افزودن محصول به سبد
   /// اگر محصول قبلاً در سبد است، فقط تعداد افزایش می‌یابد
   void addProduct(Product product, {int quantity = 1}) {
+    if (!product.isActive) {
+      state = state.copyWith(error: 'محصول حذف‌شده قابل فروش نیست');
+      return;
+    }
+    if (quantity <= 0 || quantity > product.stockQuantity) {
+      state = state.copyWith(error: 'موجودی «${product.name}» کافی نیست');
+      return;
+    }
     final existing = state.items.indexWhere((i) => i.productId == product.id);
     if (existing >= 0) {
+      final nextQuantity = state.items[existing].quantity + quantity;
+      if (nextQuantity > product.stockQuantity) {
+        state = state.copyWith(error: 'موجودی «${product.name}» کافی نیست');
+        return;
+      }
       // محصول هست → تعداد را اضافه کن
       final updated = List<InvoiceItem>.from(state.items);
       updated[existing] = state.items[existing].copyWith(
-        quantity: state.items[existing].quantity + quantity,
+        quantity: nextQuantity,
       );
       state = state.copyWith(items: updated);
     } else {
@@ -183,7 +189,11 @@ class CartNotifier extends StateNotifier<CartState> {
   /// ثبت نهایی فاکتور
   /// ترتیب: ۱) ذخیره فاکتور  ۲) کاهش موجودی  ۳) ثبت بدهی نسیه
   Future<int?> submitInvoice() async {
-    if (state.items.isEmpty) return null;
+    if (state.isSubmitting) return null;
+    if (state.items.isEmpty) {
+      state = state.copyWith(error: 'فاکتور بدون کالا قابل ثبت نیست');
+      return null;
+    }
     state = state.copyWith(isSubmitting: true, error: null);
 
     try {
@@ -193,7 +203,7 @@ class CartNotifier extends StateNotifier<CartState> {
 
       final invoice = Invoice(
         id: 0,
-        invoiceNumber: _generateInvoiceNumber(),
+        invoiceNumber: '',
         customerId: state.customer?.id,
         customerName: state.customer?.name,
         items: state.items,
@@ -206,26 +216,7 @@ class CartNotifier extends StateNotifier<CartState> {
         createdAt: DateTime.now(),
       );
 
-      final id = await _db.transaction(() async {
-        final savedId = await _invoiceRepo.saveInvoice(invoice);
-        for (final item in state.items) {
-          final product = await _productRepo.findById(item.productId);
-          if (product != null) {
-            final newStock = product.stockQuantity - item.quantity;
-            await _productRepo.updateStock(
-                item.productId, newStock.clamp(0, 999999));
-          }
-        }
-        if (state.paymentMethod == PaymentMethod.credit &&
-            state.customer != null) {
-          await _ledgerRepo.createCreditPurchase(
-            customerId: state.customer!.id,
-            amount: invoice.finalAmount.round(),
-            invoiceId: savedId,
-          );
-        }
-        return savedId;
-      });
+      final id = await _invoiceRepo.createSale(invoice);
 
       state = state.copyWith(isSubmitting: false, lastInvoiceId: id);
       return id;
@@ -241,24 +232,11 @@ class CartNotifier extends StateNotifier<CartState> {
   /// پاک کردن کامل سبد برای فاکتور جدید
   void clearCart() => state = const CartState();
 
-  /// تولید شماره فاکتور یکتا بر اساس تاریخ و میلی‌ثانیه
-  String _generateInvoiceNumber() {
-    final now = DateTime.now();
-    return 'INV-'
-        '${now.year}'
-        '${now.month.toString().padLeft(2, '0')}'
-        '${now.day.toString().padLeft(2, '0')}'
-        '-'
-        '${now.millisecondsSinceEpoch % 10000}';
-  }
 }
 
 /// Provider سبد خرید — یک instance در کل اپ
 final cartProvider = StateNotifierProvider<CartNotifier, CartState>((ref) {
   return CartNotifier(
     ref.watch(invoiceRepositoryProvider),
-    ref.watch(productRepositoryProvider),
-    LedgerRepository(ref.watch(databaseProvider)),
-    ref.watch(databaseProvider),
   );
 });

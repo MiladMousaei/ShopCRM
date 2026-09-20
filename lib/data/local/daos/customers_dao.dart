@@ -30,8 +30,8 @@ class CustomersDao extends DatabaseAccessor<AppDatabase> with _$CustomersDaoMixi
   Future<int> insertCustomer(CustomersTableCompanion customer) =>
       into(customersTable).insert(customer);
 
-  Future<bool> updateCustomer(CustomersTableCompanion customer) =>
-      update(customersTable).replace(customer);
+  Future<int> updateCustomer(int id, CustomersTableCompanion customer) =>
+      (update(customersTable)..where((t) => t.id.equals(id))).write(customer);
 
   Future<void> updateDebt(int id, double newDebt) =>
       (update(customersTable)..where((t) => t.id.equals(id)))

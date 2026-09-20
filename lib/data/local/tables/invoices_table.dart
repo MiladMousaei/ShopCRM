@@ -36,6 +36,7 @@ class InvoiceItemsTable extends Table {
   TextColumn get productBarcode => text().nullable()();
   IntColumn get quantity => integer()();
   RealColumn get unitPrice => real()();
+  RealColumn get purchasePrice => real().withDefault(const Constant(0))();
   RealColumn get discountPercent => real().withDefault(const Constant(0))();
   RealColumn get subtotal => real()();
 }
