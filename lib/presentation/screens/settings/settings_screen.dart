@@ -58,7 +58,7 @@ class SettingsScreen extends ConsumerWidget {
               title: 'سرور',
               icon: Icons.dns_outlined,
               children: [
-                const _SettingsTile(
+                _SettingsTile(
                   icon: Icons.cloud_sync,
                   iconColor: syncState.isOnline
                       ? AppColors.success
@@ -849,30 +849,30 @@ class _PosSettingsTileState extends State<_PosSettingsTile> {
                         fontSize: 13,
                         color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
-                Row(
+                const Row(
                   children: [
-                    const SizedBox(
+                    SizedBox(
                       width: 48,
                       child: Icon(
                         Icons.radio_button_checked,
                         color: AppColors.primary,
                       ),
                     ),
-                    const Text('دستی (شماره پیگیری)',
+                    Text('دستی (شماره پیگیری)',
                         style:
                             TextStyle(fontFamily: 'Vazirmatn', fontSize: 13)),
                   ],
                 ),
-                Row(
+                const Row(
                   children: [
-                    const SizedBox(
+                    SizedBox(
                       width: 48,
                       child: Icon(
                         Icons.radio_button_unchecked,
                         color: AppColors.textHint,
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Text('اتوماتیک (غیرفعال تا اتصال واقعی)',
                         style:
                             TextStyle(fontFamily: 'Vazirmatn', fontSize: 13)),
