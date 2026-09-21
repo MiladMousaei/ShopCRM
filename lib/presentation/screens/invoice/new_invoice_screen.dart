@@ -765,7 +765,7 @@ class _PosPaymentDialogState extends State<_PosPaymentDialog> {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.posColor),
                         ),
-                        child: const Text(
+                        child: Text(
                           'دستی',
                           textAlign: TextAlign.center,
                           style: TextStyle(
