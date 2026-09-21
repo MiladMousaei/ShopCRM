@@ -330,7 +330,7 @@ class _DateButton extends StatelessWidget {
         if (picked != null) onPick(picked.toDateTime());
       },
       child: Text(
-        '${label}\n${DateConverter.toShamsi(date)}',
+        '$label\n${DateConverter.toShamsi(date)}',
         style: const TextStyle(fontFamily: 'Vazirmatn', fontSize: 12),
         textAlign: TextAlign.center,
       ),
@@ -357,7 +357,7 @@ class _SummaryCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color, color.withOpacity(0.8)],
+          colors: [color, color.withValues(alpha: 0.8)],
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
         ),

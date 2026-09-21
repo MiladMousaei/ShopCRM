@@ -1,5 +1,5 @@
-/// صفحه مدیریت انبار — نمایش موجودی همه محصولات
-/// با رنگ‌بندی وضعیت: قرمز = کمبود موجودی، سبز = موجودی کافی
+// صفحه مدیریت انبار — نمایش موجودی همه محصولات
+// با رنگ‌بندی وضعیت: قرمز = کمبود موجودی، سبز = موجودی کافی
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -183,9 +183,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
         children: [
           const Icon(Icons.error_outline, size: 64, color: AppColors.error),
           const SizedBox(height: 12),
-          Text(
+          const Text(
             'خطا در بارگذاری انبار',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Vazirmatn',
               fontSize: 16,
               color: AppColors.textPrimary,
@@ -308,9 +308,9 @@ class _SummaryChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -412,7 +412,9 @@ class _InventoryProductTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: stockBgColor,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: stockColor.withOpacity(0.4)),
+                    border: Border.all(
+                      color: stockColor.withValues(alpha: 0.4),
+                    ),
                   ),
                   child: Text(
                     '${CurrencyFormatter.formatNumber(product.stockQuantity)} عدد',

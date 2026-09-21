@@ -231,7 +231,7 @@ void main() {
       raw.execute('DROP TABLE IF EXISTS $table');
     }
     raw.execute('PRAGMA user_version = 3');
-    raw.dispose();
+    raw.close();
 
     final migrated = AppDatabase.forTesting(NativeDatabase(file));
     expect(await migrated.select(migrated.productsTable).get(), hasLength(1));

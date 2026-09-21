@@ -24,7 +24,7 @@ class DioClient {
       responseType: ResponseType.json,
     ));
 
-    final storage = const FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     _instance!.interceptors.addAll([
       ApiInterceptor(dio: _instance!, secureStorage: storage),
       LogInterceptor(

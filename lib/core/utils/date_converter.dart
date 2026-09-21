@@ -79,10 +79,18 @@ class DateConverter {
   /// نمایش زمان نسبی: ۳ ساعت پیش، لحظاتی پیش و...
   static String timeAgo(DateTime date) {
     final diff = DateTime.now().difference(date);
-    if (diff.inSeconds < 60)  return 'لحظاتی پیش';
-    if (diff.inMinutes < 60)  return '${_toFarsi(diff.inMinutes.toString())} دقیقه پیش';
-    if (diff.inHours < 24)    return '${_toFarsi(diff.inHours.toString())} ساعت پیش';
-    if (diff.inDays < 7)      return '${_toFarsi(diff.inDays.toString())} روز پیش';
+    if (diff.inSeconds < 60) {
+      return 'لحظاتی پیش';
+    }
+    if (diff.inMinutes < 60) {
+      return '${_toFarsi(diff.inMinutes.toString())} دقیقه پیش';
+    }
+    if (diff.inHours < 24) {
+      return '${_toFarsi(diff.inHours.toString())} ساعت پیش';
+    }
+    if (diff.inDays < 7) {
+      return '${_toFarsi(diff.inDays.toString())} روز پیش';
+    }
     return toShamsi(date);
   }
 

@@ -1,6 +1,6 @@
-/// صفحه تنظیم موجودی انبار
-/// کاربر می‌تواند ورود، خروج یا تعدیل موجودی ثبت کند
-/// اگر productId ارسال شود، محصول از قبل انتخاب است؛ وگرنه ابتدا جستجو نمایش می‌یابد
+// صفحه تنظیم موجودی انبار
+// کاربر می‌تواند ورود، خروج یا تعدیل موجودی ثبت کند
+// اگر productId ارسال شود، محصول از قبل انتخاب است؛ وگرنه ابتدا جستجو نمایش می‌یابد
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -502,19 +502,23 @@ class _AdjustStockScreenState extends ConsumerState<AdjustStockScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.08) : Colors.transparent,
+          color:
+              isSelected ? color.withValues(alpha: 0.08) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: isSelected ? Border.all(color: color.withOpacity(0.3)) : null,
+          border: isSelected
+              ? Border.all(color: color.withValues(alpha: 0.3))
+              : null,
         ),
         child: Row(
           children: [
-            Radio<InventoryLogType>(
-              value: type,
-              groupValue: _selectedType,
-              activeColor: color,
-              onChanged: (v) {
-                if (v != null) setState(() => _selectedType = v);
-              },
+            SizedBox(
+              width: 48,
+              child: Icon(
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color: isSelected ? color : AppColors.textSecondary,
+              ),
             ),
             Icon(icon,
                 color: isSelected ? color : AppColors.textSecondary, size: 20),

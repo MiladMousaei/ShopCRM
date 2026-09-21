@@ -27,7 +27,7 @@ class AppTheme {
       textTheme: AppTextStyles.textTheme,
 
       // AppBar
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -262,7 +262,7 @@ class AppTheme {
       fontFamily: 'Vazirmatn',
       textTheme: AppTextStyles.textTheme,
 
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,

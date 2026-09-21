@@ -83,6 +83,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_secure_storage_platform_interface: ^1.1.2
+  path_provider_platform_interface: ^2.1.2
 
   # کد جنریشن
   build_runner: ^2.10.4

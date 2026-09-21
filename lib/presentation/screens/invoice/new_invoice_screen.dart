@@ -499,14 +499,14 @@ class _CartEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.shopping_cart_outlined,
+          Icon(Icons.shopping_cart_outlined,
               size: 52, color: AppColors.textHint),
-          const SizedBox(height: 12),
-          const Text(
+          SizedBox(height: 12),
+          Text(
             'سبد خرید خالی است',
             style: TextStyle(
               fontFamily: 'Vazirmatn',
@@ -514,8 +514,8 @@ class _CartEmpty extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: 6),
-          const Text(
+          SizedBox(height: 6),
+          Text(
             'بارکد اسکن کنید یا محصول را جستجو کنید',
             style: TextStyle(
               fontFamily: 'Vazirmatn',
@@ -628,7 +628,7 @@ class _PaymentMethodRow extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: selected
-                    ? _methodColor(method).withOpacity(0.15)
+                    ? _methodColor(method).withValues(alpha: 0.15)
                     : AppColors.background,
                 border: Border.all(
                   color: selected ? _methodColor(method) : AppColors.border,
@@ -720,10 +720,12 @@ class _PosPaymentDialogState extends State<_PosPaymentDialog> {
                 padding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.posColor.withOpacity(0.08),
+                  color: AppColors.posColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
                   border:
-                      Border.all(color: AppColors.posColor.withOpacity(0.3)),
+                      Border.all(
+                        color: AppColors.posColor.withValues(alpha: 0.3),
+                      ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -763,7 +765,7 @@ class _PosPaymentDialogState extends State<_PosPaymentDialog> {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.posColor),
                         ),
-                        child: Text(
+                        child: const Text(
                           'دستی',
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -788,7 +790,7 @@ class _PosPaymentDialogState extends State<_PosPaymentDialog> {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.posColor),
                         ),
-                        child: Text(
+                        child: const Text(
                           'اتوماتیک (غیرفعال)',
                           textAlign: TextAlign.center,
                           style: TextStyle(

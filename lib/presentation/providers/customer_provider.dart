@@ -1,4 +1,4 @@
-/// Provider های مربوط به مشتریان
+// Provider های مربوط به مشتریان
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/customer.dart';
 import '../../domain/models/invoice.dart';

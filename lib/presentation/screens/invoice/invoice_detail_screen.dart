@@ -1,6 +1,6 @@
-/// صفحه جزئیات فاکتور
-/// نمایش کامل یک فاکتور: اطلاعات، آیتم‌ها، خلاصه مالی
-/// امکان پرینت و اشتراک‌گذاری متن فاکتور
+// صفحه جزئیات فاکتور
+// نمایش کامل یک فاکتور: اطلاعات، آیتم‌ها، خلاصه مالی
+// امکان پرینت و اشتراک‌گذاری متن فاکتور
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -257,9 +257,11 @@ class _InvoiceDetailBody extends ConsumerWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor.withOpacity(0.3)),
+                    border: Border.all(
+                      color: statusColor.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     invoice.status.label,
@@ -605,7 +607,7 @@ class _InvoiceDetailBody extends ConsumerWidget {
   }
 
   /// اشتراک‌گذاری متن ساده فاکتور
-  void _shareInvoice(BuildContext context, Invoice invoice) {
+  Future<void> _shareInvoice(BuildContext context, Invoice invoice) async {
     final buffer = StringBuffer();
     buffer.writeln('=== ${AppStrings.appName} ===');
     buffer.writeln('شماره فاکتور: ${invoice.invoiceNumber}');
@@ -639,10 +641,10 @@ class _InvoiceDetailBody extends ConsumerWidget {
     buffer.writeln(AppStrings.receiptThankYou);
 
     // اشتراک‌گذاری متن از طریق share_plus
-    Share.share(
-      buffer.toString(),
+    await SharePlus.instance.share(ShareParams(
+      text: buffer.toString(),
       subject: 'فاکتور ${invoice.invoiceNumber}',
-    );
+    ));
   }
 
   /// آیکون روش پرداخت

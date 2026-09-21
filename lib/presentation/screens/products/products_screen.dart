@@ -76,7 +76,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
         ),
         body: Column(
           children: [
-            _CategoryFilterRow(),
+            const _CategoryFilterRow(),
             Expanded(child: _buildBody(context, ref, products, isWide)),
           ],
         ),
@@ -378,7 +378,7 @@ class _StockBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        '${CurrencyFormatter.formatNumber(stock)}',
+        CurrencyFormatter.formatNumber(stock),
         style: TextStyle(
           fontFamily: 'Vazirmatn',
           fontSize: 11,

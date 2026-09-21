@@ -58,7 +58,7 @@ class SettingsScreen extends ConsumerWidget {
               title: 'سرور',
               icon: Icons.dns_outlined,
               children: [
-                _SettingsTile(
+                const _SettingsTile(
                   icon: Icons.cloud_sync,
                   iconColor: syncState.isOnline
                       ? AppColors.success
@@ -101,7 +101,7 @@ class SettingsScreen extends ConsumerWidget {
                   onTap: () => context.go('/settings/printer'),
                 ),
                 const Divider(height: 1),
-                _SettingsTile(
+                const _SettingsTile(
                   icon: Icons.info_outline,
                   title: 'درباره اپلیکیشن',
                   subtitle: '${AppStrings.appName} - ${AppStrings.appVersion}',
@@ -122,6 +122,7 @@ class SettingsScreen extends ConsumerWidget {
                     );
                     if (confirmed == true && context.mounted) {
                       await ref.read(authProvider.notifier).logout();
+                      if (!context.mounted) return;
                       context.go('/login');
                     }
                   },
@@ -402,11 +403,12 @@ class _BiometricTileState extends State<_BiometricTile> {
   Future<void> _load() async {
     final available = await BiometricService.isAvailable();
     final enabled = await BiometricService.isEnabled();
-    if (mounted)
+    if (mounted) {
       setState(() {
         _available = available;
         _enabled = enabled;
       });
+    }
   }
 
   Future<void> _toggle(bool value) async {
@@ -431,7 +433,7 @@ class _BiometricTileState extends State<_BiometricTile> {
   @override
   Widget build(BuildContext context) {
     if (!_available) {
-      return _SettingsTile(
+      return const _SettingsTile(
         icon: Icons.fingerprint,
         iconColor: AppColors.textHint,
         title: 'ورود با اثر انگشت',
@@ -446,7 +448,7 @@ class _BiometricTileState extends State<_BiometricTile> {
       trailing: Switch(
         value: _enabled,
         onChanged: _toggle,
-        activeColor: AppColors.success,
+        activeThumbColor: AppColors.success,
       ),
     );
   }
@@ -490,6 +492,7 @@ class _BackupSectionState extends State<_BackupSection> {
       setState(() => _isLoading = false);
       if (file != null) {
         await _load();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('بکاپ با موفقیت ایجاد شد',
               style: TextStyle(fontFamily: 'Vazirmatn')),
@@ -591,7 +594,7 @@ class _BackupSectionState extends State<_BackupSection> {
           trailing: Switch(
             value: _autoEnabled,
             onChanged: _toggleAuto,
-            activeColor: AppColors.success,
+            activeThumbColor: AppColors.success,
           ),
         ),
       ],
@@ -848,10 +851,12 @@ class _PosSettingsTileState extends State<_PosSettingsTile> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Radio<String>(
-                      value: 'manual',
-                      groupValue: tempMode,
-                      onChanged: (v) => setSt(() => tempMode = v!),
+                    const SizedBox(
+                      width: 48,
+                      child: Icon(
+                        Icons.radio_button_checked,
+                        color: AppColors.primary,
+                      ),
                     ),
                     const Text('دستی (شماره پیگیری)',
                         style:
@@ -860,10 +865,12 @@ class _PosSettingsTileState extends State<_PosSettingsTile> {
                 ),
                 Row(
                   children: [
-                    Radio<String>(
-                      value: 'auto',
-                      groupValue: tempMode,
-                      onChanged: null,
+                    const SizedBox(
+                      width: 48,
+                      child: Icon(
+                        Icons.radio_button_unchecked,
+                        color: AppColors.textHint,
+                      ),
                     ),
                     const Expanded(
                       child: Text('اتوماتیک (غیرفعال تا اتصال واقعی)',
@@ -881,7 +888,7 @@ class _PosSettingsTileState extends State<_PosSettingsTile> {
                           color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
-                    value: tempPort,
+                    initialValue: tempPort,
                     items: _portOptions
                         .map((p) => DropdownMenuItem(
                             value: p,

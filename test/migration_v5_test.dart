@@ -76,7 +76,7 @@ void main() {
       VALUES (1, 1, 'اول', 1, 100000, 100000)
     ''');
     raw.execute('PRAGMA user_version = 4');
-    raw.dispose();
+    raw.close();
 
     final db = AppDatabase.forTesting(NativeDatabase(file));
     final products = await db.customSelect(

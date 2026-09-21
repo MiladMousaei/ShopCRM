@@ -110,7 +110,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               decoration: BoxDecoration(
                                 color: selected
-                                    ? AppColors.primary.withOpacity(0.1)
+                                    ? AppColors.primary.withValues(alpha: 0.1)
                                     : AppColors.background,
                                 border: Border.all(
                                   color: selected
@@ -602,11 +602,12 @@ class _BluetoothScanDialogState extends State<_BluetoothScanDialog> {
         if (mounted) setState(() => _scanning = false);
       },
       onError: (e) {
-        if (mounted)
+        if (mounted) {
           setState(() {
             _scanning = false;
             _error = 'بلوتوث در دسترس نیست یا مجوز داده نشده';
           });
+        }
       },
     );
   }
@@ -714,11 +715,12 @@ class _WifiDiscoveryDialogState extends State<_WifiDiscoveryDialog> {
     try {
       final result =
           await WiFiPrinterService.discoverPrinters(subnet: widget.subnet);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _found = result;
           _scanning = false;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _scanning = false);
     }

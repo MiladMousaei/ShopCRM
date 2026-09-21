@@ -1,6 +1,6 @@
-/// Provider های مرکزی گزارش‌گیری
-/// قبلاً در dashboard_screen و reports_screen تعریف شده بودند
-/// این فایل آن‌ها را یکجا جمع می‌کند
+// Provider های مرکزی گزارش‌گیری
+// قبلاً در dashboard_screen و reports_screen تعریف شده بودند
+// این فایل آن‌ها را یکجا جمع می‌کند
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/report_repository.dart';
 import '../providers/product_provider.dart';

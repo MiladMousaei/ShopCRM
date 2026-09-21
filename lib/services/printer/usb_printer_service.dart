@@ -110,7 +110,7 @@ class UsbPrinterService extends PrinterService {
 
   /// ارسال از طریق .NET System.Printing (برای پرینترهای شبکه یا مدرن)
   Future<void> _sendViaPowerShell(String filePath) async {
-    final script = r'''
+    const script = r'''
 param([string]$PrinterName, [string]$FilePath)
 Add-Type -AssemblyName System.Printing
 $ErrorActionPreference = "Stop"

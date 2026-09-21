@@ -144,7 +144,7 @@ class DashboardScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
 
                 // نمودار فروش هفتگی
-                _SectionHeader(title: AppStrings.weeklySalesChart),
+                const _SectionHeader(title: AppStrings.weeklySalesChart),
                 const SizedBox(height: 12),
                 Card(
                   child: Padding(
@@ -170,7 +170,7 @@ class DashboardScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _SectionHeader(title: AppStrings.recentInvoices),
+                    const _SectionHeader(title: AppStrings.recentInvoices),
                     TextButton(
                       onPressed: () => context.go('/invoices'),
                       child: const Text('مشاهده همه',
@@ -182,7 +182,7 @@ class DashboardScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 recentInvoices.when(
                   data: (invoices) => invoices.isEmpty
-                      ? _EmptyState(
+                      ? const _EmptyState(
                           icon: Icons.receipt_long_outlined,
                           message: 'هنوز فاکتوری ثبت نشده',
                         )
@@ -338,7 +338,7 @@ class _SyncStatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

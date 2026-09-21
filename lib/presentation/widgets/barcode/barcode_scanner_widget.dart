@@ -96,7 +96,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(
@@ -182,7 +182,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget> {
 class _ScannerOverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()..color = Colors.black.withOpacity(0.5);
+    final bgPaint = Paint()..color = Colors.black.withValues(alpha: 0.5);
     final cutoutSize = size.width * 0.7;
     final left = (size.width - cutoutSize) / 2;
     final top = (size.height - cutoutSize) / 2;

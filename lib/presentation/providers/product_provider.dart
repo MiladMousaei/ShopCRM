@@ -30,17 +30,17 @@ final _rawProductsStreamProvider = StreamProvider<List<Product>>((ref) {
 });
 
 // استریم محصولات با فیلتر جستجو + دسته‌بندی
-final productsStreamProvider = StreamProvider<List<Product>>((ref) {
+final productsStreamProvider = Provider<AsyncValue<List<Product>>>((ref) {
   final category = ref.watch(productCategoryFilterProvider);
-  return ref.watch(_rawProductsStreamProvider.stream).map((products) {
+  return ref.watch(_rawProductsStreamProvider).whenData((products) {
     if (category == null) return products;
     return products.where((p) => p.categoryName == category).toList();
   });
 });
 
 // لیست دسته‌بندی‌های موجود از محصولات فعلی
-final availableCategoriesProvider = StreamProvider<List<String>>((ref) {
-  return ref.watch(_rawProductsStreamProvider.stream).map((products) {
+final availableCategoriesProvider = Provider<AsyncValue<List<String>>>((ref) {
+  return ref.watch(_rawProductsStreamProvider).whenData((products) {
     final cats = products
         .map((p) => p.categoryName)
         .whereType<String>()

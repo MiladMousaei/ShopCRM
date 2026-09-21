@@ -377,15 +377,19 @@ class _AppShellState extends ConsumerState<_AppShell>
 
   int _mobileIndexFromLocation(String loc) {
     for (int i = 0; i < _mobileRoutes.length; i++) {
-      if (loc == _mobileRoutes[i] || loc.startsWith('${_mobileRoutes[i]}/'))
+      if (loc == _mobileRoutes[i] ||
+          loc.startsWith('${_mobileRoutes[i]}/')) {
         return i;
+      }
     }
     return 4; // «بیشتر»
   }
 
   int _desktopIndexFromLocation(String loc) {
     for (int i = 0; i < _routes.length; i++) {
-      if (loc == _routes[i] || loc.startsWith('${_routes[i]}/')) return i;
+      if (loc == _routes[i] || loc.startsWith('${_routes[i]}/')) {
+        return i;
+      }
     }
     return 0;
   }

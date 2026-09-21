@@ -1,5 +1,5 @@
-/// تست‌های پایه برای اطمینان از اجرا شدن برنامه
-/// تست‌های جامع‌تر در test/utils/ و test/models/ قرار دارند
+// تست‌های پایه برای اطمینان از اجرا شدن برنامه
+// تست‌های جامع‌تر در test/utils/ و test/models/ قرار دارند
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

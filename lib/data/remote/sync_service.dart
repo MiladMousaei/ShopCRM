@@ -1,6 +1,6 @@
-/// سرویس همگام‌سازی داده‌ها با سرور مرکزی
-/// پشتیبانی از push (ارسال داده‌های محلی) و pull (دریافت از سرور)
-/// مکانیزم retry با backoff نمایی: ۲، ۴، ۸ ثانیه
+// سرویس همگام‌سازی داده‌ها با سرور مرکزی
+// پشتیبانی از push (ارسال داده‌های محلی) و pull (دریافت از سرور)
+// مکانیزم retry با backoff نمایی: ۲، ۴، ۸ ثانیه
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../../data/local/database.dart';
