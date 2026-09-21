@@ -15,7 +15,6 @@ import '../../providers/invoice_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/customer_provider.dart';
 import '../../providers/report_provider.dart';
-import '../../providers/printer_provider.dart';
 import '../../widgets/common/app_header_back_button.dart';
 import '../../widgets/common/confirm_dialog.dart';
 import '../../../services/pdf_service.dart';

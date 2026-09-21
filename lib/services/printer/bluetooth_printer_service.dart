@@ -10,9 +10,6 @@ import '../../domain/models/invoice.dart';
 /// اکثر پرینترهای حرارتی BT از SPP UUID استفاده می‌کنند:
 /// 0000ff02-0000-1000-8000-00805f9b34fb (write characteristic)
 class BluetoothPrinterService extends PrinterService {
-  static const _sppServiceUuid = '000018f0-0000-1000-8000-00805f9b34fb';
-  static const _sppWriteUuid   = '00002af1-0000-1000-8000-00805f9b34fb';
-
   final String deviceId;
   final String deviceName;
 

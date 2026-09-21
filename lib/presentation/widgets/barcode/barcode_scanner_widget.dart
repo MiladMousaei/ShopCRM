@@ -183,8 +183,6 @@ class _ScannerOverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final bgPaint = Paint()..color = Colors.black.withOpacity(0.5);
-    final clearPaint = Paint()..color = Colors.transparent;
-
     final cutoutSize = size.width * 0.7;
     final left = (size.width - cutoutSize) / 2;
     final top = (size.height - cutoutSize) / 2;

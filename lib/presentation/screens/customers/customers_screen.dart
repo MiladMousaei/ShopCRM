@@ -8,7 +8,6 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../domain/models/customer.dart';
 import '../../../domain/models/product.dart';
-import '../../../data/repositories/customer_repository.dart';
 import '../../providers/cart_provider.dart';
 import '../../widgets/common/app_header_back_button.dart';
 

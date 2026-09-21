@@ -49,7 +49,7 @@ class CustomersDao extends DatabaseAccessor<AppDatabase> with _$CustomersDaoMixi
 
   Future<double> getTotalDebt() async {
     final customers = await getDebtors();
-    return customers.fold<double>(0.0, (sum, c) => sum + (c.totalDebt as double));
+    return customers.fold<double>(0.0, (sum, c) => sum + c.totalDebt);
   }
 
   Future<List<CustomersTableData>> getPendingCustomers() =>

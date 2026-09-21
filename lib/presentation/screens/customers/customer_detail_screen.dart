@@ -9,7 +9,6 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_converter.dart';
 import '../../../domain/models/customer.dart';
 import '../../../domain/models/invoice.dart';
-import '../../../domain/models/product.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/ledger_provider.dart';
 import '../../widgets/common/app_header_back_button.dart';

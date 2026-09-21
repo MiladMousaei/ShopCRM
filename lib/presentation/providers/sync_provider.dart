@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../core/network/dio_client.dart';
-import '../../data/local/database.dart';
 import '../../data/remote/sync_service.dart';
 import '../../services/notification_service.dart';
 import 'product_provider.dart';

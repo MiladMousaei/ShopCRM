@@ -8,11 +8,9 @@ import '../../data/repositories/product_repository.dart';
 import '../../data/repositories/invoice_repository.dart';
 import '../../data/repositories/customer_repository.dart';
 import '../../domain/models/product.dart';
-import '../../domain/models/invoice.dart';
 import '../../domain/models/customer.dart';
 
 class SyncService {
-  final AppDatabase _db;
   final Dio _dio;
   final ProductRepository _productRepo;
   final InvoiceRepository _invoiceRepo;
@@ -21,8 +19,7 @@ class SyncService {
   SyncService({
     required AppDatabase db,
     required Dio dio,
-  })  : _db = db,
-        _dio = dio,
+  })  : _dio = dio,
         _productRepo = ProductRepository(db),
         _invoiceRepo = InvoiceRepository(db),
         _customerRepo = CustomerRepository(db);

@@ -1,5 +1,4 @@
 import '../../data/local/database.dart';
-import '../../domain/models/invoice.dart';
 import 'invoice_repository.dart';
 
 class SalesReport {
@@ -33,10 +32,9 @@ class TopProduct {
 }
 
 class ReportRepository {
-  final AppDatabase _db;
   final InvoiceRepository _invoiceRepo;
 
-  ReportRepository(this._db, this._invoiceRepo);
+  ReportRepository(AppDatabase _, this._invoiceRepo);
 
   Future<SalesReport> getReport(DateTime from, DateTime to) async {
     final invoices = await _invoiceRepo.getInvoicesByPeriod(from, to);
