@@ -33,12 +33,12 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         titleTextStyle: AppTextStyles.appBarTitle,
-        systemOverlayStyle: const SystemUiOverlayStyle(
+        systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: AppColors.primaryDark,
           statusBarIconBrightness: Brightness.light,
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actionsIconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Colors.white),
+        actionsIconTheme: IconThemeData(color: Colors.white),
       ),
 
       // کارت
@@ -268,12 +268,12 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         titleTextStyle: AppTextStyles.appBarTitle,
-        systemOverlayStyle: const SystemUiOverlayStyle(
+        systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: AppColors.primaryDark,
           statusBarIconBrightness: Brightness.light,
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actionsIconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Colors.white),
+        actionsIconTheme: IconThemeData(color: Colors.white),
       ),
 
       cardTheme: CardThemeData(
